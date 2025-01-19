@@ -1,0 +1,225 @@
+{
+    "reactAdmin": {
+        "theme": {
+            "palette": {
+                "mode": "dark",
+                "primary": {
+                    "main": "#1976d2",
+                    "light": "#42a5f5",
+                    "dark": "#1565c0",
+                    "contrastText": "#ffffff"
+                },
+                "secondary": {
+                    "main": "#9c27b0",
+                    "light": "#ba68c8",
+                    "dark": "#7b1fa2",
+                    "contrastText": "#ffffff"
+                },
+                "background": {
+                    "default": "#121212",
+                    "paper": "#1e1e1e"
+                }
+            },
+            "components": {
+                "MuiCard": {
+                    "styleOverrides": {
+                        "root": {
+                            "backdropFilter": "blur(10px)",
+                            "backgroundColor": "rgba(30, 30, 30, 0.8)"
+                        }
+                    }
+                }
+            },
+            "toggleButton": {
+                "enabled": true,
+                "position": "appBar"
+            }
+        },
+        "features": {
+            "dataGrid": {
+                "enabled": true,
+                "defaultOptions": {
+                    "rowsPerPage": 25,
+                    "density": "comfortable",
+                    "checkboxSelection": true
+                }
+            },
+            "richTextEditor": true,
+            "fileUpload": true,
+            "export": {
+                "csv": true,
+                "excel": true
+            },
+            "dashboard": {
+                "customizable": true,
+                "refreshInterval": 30,
+                "layout": {
+                    "saveable": true,
+                    "responsive": true,
+                    "gridColumns": 12
+                },
+                "widgets": [
+                    "systemStatus",
+                    "serverMetrics",
+                    "nginxStatus",
+                    "mysqlStatus",
+                    "phpStatus",
+                    "alerts",
+                    "sslCertificates",
+                    "backupStatus",
+                    "securityAudit",
+                    "resourceUsage",
+                    "siteHealth"
+                ]
+            },
+            "multiSite": {
+                "enabled": true,
+                "features": {
+                    "templates": true,
+                    "batchOperations": true,
+                    "customDomains": true,
+                    "sslManagement": true
+                },
+                "deployment": {
+                    "parallel": true,
+                    "rollback": true,
+                    "staging": true
+                }
+            },
+            "backup": {
+                "enabled": true,
+                "types": {
+                    "full": {
+                        "schedule": "0 2 * * 0",
+                        "retention": {
+                            "daily": 7,
+                            "weekly": 4,
+                            "monthly": 3
+                        }
+                    },
+                    "database": {
+                        "schedule": "0 */6 * * *",
+                        "compression": true
+                    },
+                    "files": {
+                        "schedule": "0 3 * * *",
+                        "excludes": ["cache", "logs", "tmp"]
+                    },
+                    "config": {
+                        "schedule": "0 4 * * *",
+                        "includes": ["nginx", "php", "mysql", "ssl"]
+                    }
+                },
+                "storage": {
+                    "local": {
+                        "path": "/backup",
+                        "maxSize": "500GB"
+                    },
+                    "remote": {
+                        "s3": {
+                            "enabled": true,
+                            "bucket": "papapanel-backup",
+                            "region": "auto",
+                            "lifecycle": {
+                                "enabled": true,
+                                "transition": {
+                                    "days": 30,
+                                    "storageClass": "STANDARD_IA"
+                                }
+                            }
+                        }
+                    }
+                },
+                "restore": {
+                    "verification": true,
+                    "dryRun": true,
+                    "partialRestore": true
+                }
+            },
+            "i18n": {
+                "defaultLanguage": "en",
+                "languages": ["en", "zh-CN"],
+                "translations": {
+                    "en": {
+                        "app.name": "PapaPanel",
+                        "app.description": "LEMP Environment Management Panel"
+                    },
+                    "zh-CN": {
+                        "app.name": "PapaPanel",
+                        "app.description": "LEMP环境管理面板"
+                    }
+                }
+            }
+        }
+    },
+    "pwa": {
+        "enabled": true,
+        "manifest": {
+            "name": "PapaPanel",
+            "shortName": "PapaPanel",
+            "description": "LEMP Environment Management Panel",
+            "descriptions": {
+                "en": "LEMP Environment Management Panel",
+                "zh-CN": "LEMP环境管理面板"
+            },
+            "themeColor": "#1976d2",
+            "backgroundColor": "#fafafa",
+            "display": "standalone",
+            "scope": "/",
+            "startUrl": "/",
+            "icons": [
+                {
+                    "src": "icons/icon-72x72.png",
+                    "sizes": "72x72",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        },
+        "workbox": {
+            "enabled": true,
+            "offline": true,
+            "runtimeCaching": [
+                {
+                    "urlPattern": "/api/.*",
+                    "handler": "NetworkFirst",
+                    "options": {
+                        "cacheName": "api-cache",
+                        "expiration": {
+                            "maxEntries": 100,
+                            "maxAgeSeconds": 86400
+                        }
+                    }
+                },
+                {
+                    "urlPattern": "/metrics/.*",
+                    "handler": "NetworkFirst",
+                    "options": {
+                        "cacheName": "metrics-cache",
+                        "expiration": {
+                            "maxEntries": 50,
+                            "maxAgeSeconds": 300
+                        }
+                    }
+                }
+            ]
+        },
+        "notifications": {
+            "enabled": true,
+            "alerts": {
+                "system": true,
+                "security": true,
+                "performance": true
+            }
+        }
+    }
+} 

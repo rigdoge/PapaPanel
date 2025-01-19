@@ -1,0 +1,179 @@
+{
+    "editor": {
+        "formatOnSave": true,
+        "tabSize": 2,
+        "insertSpaces": true,
+        "wordWrap": "on",
+        "defaultFormatter": "prettier",
+        "rulers": [80, 100],
+        "bracketPairColorization": true,
+        "snippets": true,
+        "suggestOnTriggerCharacters": true,
+        "minimap": true
+    },
+    "terminal": {
+        "shell": "/bin/zsh",
+        "fontSize": 14,
+        "integrated": true,
+        "copyOnSelection": true,
+        "defaultProfile": {
+            "osx": "zsh",
+            "linux": "bash"
+        }
+    },
+    "language": {
+        "typescript": {
+            "format": {
+                "enable": true,
+                "semicolons": true,
+                "singleQuote": true
+            },
+            "suggest": {
+                "completeFunctionCalls": true,
+                "enabled": true
+            }
+        },
+        "javascript": {
+            "format": {
+                "enable": true,
+                "semicolons": true,
+                "singleQuote": true
+            }
+        },
+        "python": {
+            "formatting": {
+                "provider": "black",
+                "blackPath": "black"
+            },
+            "linting": {
+                "enabled": true,
+                "pylintEnabled": true
+            }
+        },
+        "yaml": {
+            "format": {
+                "enable": true,
+                "singleQuote": true
+            },
+            "validate": true,
+            "schemaStore": {
+                "enable": true,
+                "url": "https://www.schemastore.org/api/json/catalog.json"
+            }
+        },
+        "shellscript": {
+            "format": {
+                "enable": true
+            },
+            "validate": true
+        }
+    },
+    "workbench": {
+        "colorTheme": "One Dark Pro",
+        "iconTheme": "material-icon-theme",
+        "tree": {
+            "indent": 16,
+            "renderIndentGuides": true
+        }
+    },
+    "remote": {
+        "SSH": {
+            "defaultForwardedPorts": [
+                {"port": 3000, "description": "React"},
+                {"port": 9090, "description": "Prometheus"},
+                {"port": 9093, "description": "Alertmanager"},
+                {"port": 9100, "description": "Node Exporter"},
+                {"port": 9115, "description": "Blackbox Exporter"},
+                {"port": 3306, "description": "MySQL"},
+                {"port": 80, "description": "Nginx"},
+                {"port": 443, "description": "HTTPS"},
+                {"port": 3000, "description": "Grafana"}
+            ],
+            "remotePlatform": {
+                "linux": "linux-arm64"
+            }
+        }
+    },
+    "docker": {
+        "enabled": true,
+        "buildKit": true,
+        "containerName": {
+            "pattern": "${workspaceFolderBasename}-${containerName}"
+        },
+        "compose": {
+            "path": "docker-compose.yml",
+            "autoStart": true
+        }
+    },
+    "debug": {
+        "javascript": {
+            "sourceMaps": true,
+            "autoAttachChildProcesses": true
+        },
+        "python": {
+            "justMyCode": false
+        }
+    },
+    "git": {
+        "workflow": {
+            "branchStrategy": {
+                "main": "protected",
+                "develop": "integration",
+                "feature": "feature/*",
+                "release": "release/*",
+                "hotfix": "hotfix/*"
+            },
+            "commitRules": {
+                "conventional": true,
+                "types": [
+                    "feat",
+                    "fix",
+                    "docs",
+                    "style",
+                    "refactor",
+                    "test",
+                    "chore"
+                ],
+                "requireScope": true,
+                "requireDescription": true,
+                "template": {
+                    "header": "<type>(<scope>): <subject>",
+                    "body": "详细描述:\n\n",
+                    "footer": "相关文档:\n相关任务:\n"
+                }
+            },
+            "prTemplate": {
+                "sections": [
+                    "功能描述",
+                    "实现方案",
+                    "测试结果",
+                    "文档更新",
+                    "注意事项"
+                ],
+                "requireReview": true,
+                "requireTests": true,
+                "requireDocs": true
+            },
+            "automation": {
+                "docCheck": true,
+                "testCheck": true,
+                "lintCheck": true,
+                "autoChangelog": true
+            }
+        },
+        "hooks": {
+            "pre-commit": [
+                "lint",
+                "test",
+                "doc-check"
+            ],
+            "commit-msg": [
+                "conventional-commit-check"
+            ],
+            "pre-push": [
+                "full-test",
+                "build-check"
+            ]
+        }
+    }
+} 

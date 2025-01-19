@@ -1,0 +1,210 @@
+{
+    "enabled": true,
+    "providers": {
+        "aws": {
+            "enabled": true,
+            "version": "~> 4.0",
+            "regions": ["ap-northeast-1", "ap-southeast-1"],
+            "services": {
+                "ec2": true,
+                "rds": true,
+                "elasticache": true,
+                "route53": true,
+                "acm": true,
+                "s3": true
+            }
+        },
+        "alicloud": {
+            "enabled": true,
+            "version": "~> 1.0",
+            "regions": ["cn-hangzhou", "cn-beijing"],
+            "services": {
+                "ecs": true,
+                "rds": true,
+                "redis": true,
+                "dns": true,
+                "ssl": true,
+                "oss": true
+            }
+        }
+    },
+    "infrastructure": {
+        "networking": {
+            "vpc": {
+                "enabled": true,
+                "cidr": "10.0.0.0/16",
+                "subnets": {
+                    "public": ["10.0.1.0/24", "10.0.2.0/24"],
+                    "private": ["10.0.10.0/24", "10.0.11.0/24"],
+                    "database": ["10.0.20.0/24", "10.0.21.0/24"]
+                }
+            },
+            "security": {
+                "bastion": {
+                    "enabled": true,
+                    "allowedIPs": ["office", "vpn"]
+                },
+                "loadBalancer": {
+                    "enabled": true,
+                    "type": "application",
+                    "ssl": true
+                }
+            }
+        },
+        "compute": {
+            "webserver": {
+                "type": "t3.medium",
+                "count": 2,
+                "root_volume": {
+                    "size": 50,
+                    "type": "gp3"
+                }
+            },
+            "monitoring": {
+                "type": "t3.large",
+                "count": 1,
+                "root_volume": {
+                    "size": 100,
+                    "type": "gp3"
+                }
+            }
+        },
+        "database": {
+            "mysql": {
+                "engine": "mysql",
+                "version": "8.0",
+                "instance_class": "db.t3.medium",
+                "storage": {
+                    "allocated": 50,
+                    "max": 100,
+                    "type": "gp3"
+                },
+                "backup": {
+                    "retention": 7,
+                    "window": "03:00-04:00"
+                },
+                "maintenance": {
+                    "window": "Mon:04:00-Mon:05:00"
+                }
+            }
+        },
+        "cache": {
+            "redis": {
+                "engine": "redis",
+                "version": "6.x",
+                "node_type": "cache.t3.medium",
+                "num_cache_nodes": 2,
+                "parameter_group_family": "redis6.x"
+            }
+        }
+    },
+    "deployment": {
+        "environments": {
+            "development": {
+                "size": "small",
+                "ha": false,
+                "backup": {
+                    "enabled": true,
+                    "retention": "7d"
+                }
+            },
+            "staging": {
+                "size": "medium",
+                "ha": true,
+                "backup": {
+                    "enabled": true,
+                    "retention": "14d"
+                }
+            },
+            "production": {
+                "size": "large",
+                "ha": true,
+                "backup": {
+                    "enabled": true,
+                    "retention": "30d"
+                }
+            }
+        },
+        "services": {
+            "nginx": {
+                "version": "1.24",
+                "config": {
+                    "worker_processes": "auto",
+                    "worker_connections": 2048
+                }
+            },
+            "php": {
+                "version": "8.2",
+                "extensions": [
+                    "redis",
+                    "mysql",
+                    "gd",
+                    "intl"
+                ],
+                "fpm": {
+                    "pm": "dynamic",
+                    "max_children": 50
+                }
+            },
+            "monitoring": {
+                "prometheus": {
+                    "version": "2.45",
+                    "retention": "15d",
+                    "storage": {
+                        "size": "50Gi"
+                    }
+                },
+                "grafana": {
+                    "version": "10.0",
+                    "plugins": [
+                        "grafana-piechart-panel",
+                        "grafana-worldmap-panel"
+                    ]
+                }
+            }
+        }
+    },
+    "state": {
+        "backend": {
+            "type": "s3",
+            "config": {
+                "bucket": "terraform-state",
+                "key": "papapanel/terraform.tfstate",
+                "region": "ap-northeast-1",
+                "encrypt": true,
+                "dynamodb_table": "terraform-locks"
+            }
+        },
+        "workspaces": {
+            "enabled": true,
+            "names": ["default", "dev", "staging", "prod"]
+        }
+    },
+    "automation": {
+        "workflow": {
+            "planOnly": ["development"],
+            "requireApproval": ["staging", "production"],
+            "autoApply": ["development"]
+        },
+        "variables": {
+            "files": [
+                "terraform.tfvars",
+                "environments/${terraform.workspace}.tfvars"
+            ],
+            "validation": {
+                "required": true,
+                "types": true
+            }
+        },
+        "modules": {
+            "source": {
+                "type": "git",
+                "url": "https://github.com/TattooMaster/terraform-modules"
+            },
+            "versioning": {
+                "enabled": true,
+                "constraint": "~> 1.0"
+            }
+        }
+    }
+} 

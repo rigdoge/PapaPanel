@@ -1,0 +1,449 @@
+{
+    "project": {
+        "name": "PapaPanel",
+        "description": "基于 Next.js 和 React Admin 的 LEMP 环境自动化部署和监控管理平台",
+        "version": "1.0.0",
+        "author": "TattooMaster",
+        "repository": {
+            "type": "git",
+            "url": "https://github.com/TattooMaster/PapaPanel"
+        },
+        "stack": {
+            "frontend": {
+                "framework": "Next.js",
+                "admin": "React Admin",
+                "version": {
+                    "next": "14.1.0",
+                    "react": "18.2.0",
+                    "reactAdmin": "4.16.0",
+                    "typescript": "5.3.3"
+                },
+                "features": {
+                    "ssr": false,
+                    "appDir": true,
+                    "typescript": true,
+                    "eslint": true,
+                    "jest": true,
+                    "tailwind": true
+                }
+            },
+            "monitoring": ["Prometheus", "Grafana", "Alertmanager"],
+            "automation": ["Ansible", "Shell", "Terraform"],
+            "environment": "LEMP"
+        },
+        "configFiles": {
+            "features": "./config/features.json",
+            "environments": "./config/environments.json",
+            "monitoring": "./config/monitoring.json",
+            "security": "./config/security.json",
+            "development": "./config/development.json",
+            "documentation": "./config/documentation.json",
+            "terraform": "./config/terraform.json"
+        }
+    },
+    "nextjs": {
+        "compiler": {
+            "styledComponents": true,
+            "emotion": true
+        },
+        "experimental": {
+            "serverActions": true,
+            "serverComponentsExternalPackages": ["@mui/material"]
+        },
+        "typescript": {
+            "strict": true,
+            "strictNullChecks": true
+        },
+        "eslint": {
+            "ignoreDuringBuilds": false,
+            "dirs": ["pages", "components", "lib", "src"]
+        },
+        "images": {
+            "domains": ["localhost"],
+            "deviceSizes": [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+            "formats": ["image/webp"]
+        },
+        "env": {
+            "development": {
+                "API_URL": "http://localhost:3000/api"
+            },
+            "production": {
+                "API_URL": "https://api.example.com"
+            }
+        }
+    },
+    "reactAdmin": {
+        "theme": {
+            "palette": {
+                "mode": "dark",
+                "primary": {
+                    "main": "#1976d2",
+                    "light": "#42a5f5",
+                    "dark": "#1565c0"
+                },
+                "secondary": {
+                    "main": "#9c27b0",
+                    "light": "#ba68c8",
+                    "dark": "#7b1fa2"
+                }
+            },
+            "components": {
+                "MuiDrawer": {
+                    "styleOverrides": {
+                        "paper": {
+                            "backgroundColor": "#1e1e1e"
+                        }
+                    }
+                }
+            }
+        },
+        "layout": {
+            "sidebar": {
+                "width": 240,
+                "closed": false
+            },
+            "appBar": {
+                "height": 64
+            }
+        },
+        "auth": {
+            "loginPage": true,
+            "authProvider": "custom",
+            "methods": ["jwt", "oauth2"]
+        },
+        "i18n": {
+            "defaultLocale": "zh-CN",
+            "locales": ["en", "zh-CN"]
+        }
+    },
+    "editor": {
+        "formatOnSave": true,
+        "tabSize": 2,
+        "insertSpaces": true,
+        "wordWrap": "on",
+        "defaultFormatter": "prettier",
+        "rulers": [80, 100],
+        "bracketPairColorization": true,
+        "snippets": true,
+        "suggestOnTriggerCharacters": true,
+        "minimap": true
+    },
+    "terminal": {
+        "shell": "/bin/zsh",
+        "fontSize": 14,
+        "integrated": true,
+        "copyOnSelection": true,
+        "defaultProfile": {
+            "osx": "zsh",
+            "linux": "bash"
+        }
+    },
+    "ai": {
+        "language": "en",
+        "model": "claude-3-sonnet",
+        "temperature": 0.7,
+        "contextWindow": 100000,
+        "suggestions": {
+            "typescript": true,
+            "javascript": true,
+            "python": true,
+            "yaml": true,
+            "shell": true
+        }
+    },
+    "files": {
+        "autoSave": "afterDelay",
+        "autoSaveDelay": 1000,
+        "exclude": {
+            "**/node_modules": true,
+            "**/.next": true,
+            "**/dist": true,
+            "**/.git": true,
+            "**/coverage": true
+        },
+        "associations": {
+            "*.yml": "yaml",
+            "*.yaml": "yaml",
+            "Dockerfile*": "dockerfile",
+            "*.sh": "shellscript"
+        }
+    },
+    "language": {
+        "typescript": {
+            "format": {
+                "enable": true,
+                "semicolons": true,
+                "singleQuote": true
+            },
+            "suggest": {
+                "completeFunctionCalls": true,
+                "enabled": true
+            }
+        },
+        "javascript": {
+            "format": {
+                "enable": true,
+                "semicolons": true,
+                "singleQuote": true
+            }
+        },
+        "python": {
+            "formatting": {
+                "provider": "black",
+                "blackPath": "black"
+            },
+            "linting": {
+                "enabled": true,
+                "pylintEnabled": true
+            }
+        },
+        "yaml": {
+            "format": {
+                "enable": true,
+                "singleQuote": true
+            },
+            "validate": true,
+            "schemaStore": {
+                "enable": true,
+                "url": "https://www.schemastore.org/api/json/catalog.json"
+            }
+        },
+        "shellscript": {
+            "format": {
+                "enable": true
+            },
+            "validate": true
+        }
+    },
+    "workbench": {
+        "colorTheme": "One Dark Pro",
+        "iconTheme": "material-icon-theme",
+        "tree": {
+            "indent": 16,
+            "renderIndentGuides": true
+        }
+    },
+    "remote": {
+        "SSH": {
+            "defaultForwardedPorts": [
+                {"port": 3000, "description": "Next.js"},
+                {"port": 9090, "description": "Prometheus"},
+                {"port": 9093, "description": "Alertmanager"},
+                {"port": 9100, "description": "Node Exporter"},
+                {"port": 9115, "description": "Blackbox Exporter"},
+                {"port": 3306, "description": "MySQL"},
+                {"port": 80, "description": "Nginx"},
+                {"port": 443, "description": "HTTPS"},
+                {"port": 3000, "description": "Grafana"}
+            ],
+            "remotePlatform": {
+                "linux": "linux-arm64"
+            }
+        }
+    },
+    "docker": {
+        "enabled": true,
+        "buildKit": true,
+        "containerName": {
+            "pattern": "${workspaceFolderBasename}-${containerName}"
+        },
+        "compose": {
+            "path": "docker-compose.yml",
+            "autoStart": true
+        }
+    },
+    "debug": {
+        "javascript": {
+            "sourceMaps": true,
+            "autoAttachChildProcesses": true
+        },
+        "python": {
+            "justMyCode": false
+        }
+    },
+    "security": {
+        "workspace": {
+            "trust": {
+                "enabled": true,
+                "untrustedFiles": "prompt"
+            }
+        }
+    },
+    "prometheus": {
+        "scrapeInterval": "15s",
+        "evaluationInterval": "15s",
+        "exporters": {
+            "nodeExporter": true,
+            "blackboxExporter": true,
+            "mysqlExporter": true,
+            "nginxExporter": true
+        },
+        "monitoring": {
+            "aggregation": {
+                "rules": {
+                    "cpu_usage_high": {
+                        "expr": "avg(rate(node_cpu_seconds_total{mode='idle'}[5m])) < 0.2",
+                        "for": "5m",
+                        "severity": "warning"
+                    },
+                    "memory_usage_high": {
+                        "expr": "node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10",
+                        "for": "5m",
+                        "severity": "critical"
+                    },
+                    "disk_space_low": {
+                        "expr": "node_filesystem_avail_bytes{mountpoint='/'} / node_filesystem_size_bytes{mountpoint='/'} * 100 < 15",
+                        "for": "10m",
+                        "severity": "warning"
+                    },
+                    "nginx_high_error_rate": {
+                        "expr": "rate(nginx_http_requests_total{status=~'5..'}[5m]) / rate(nginx_http_requests_total[5m]) * 100 > 5",
+                        "for": "5m",
+                        "severity": "critical"
+                    },
+                    "mysql_slow_queries": {
+                        "expr": "rate(mysql_global_status_slow_queries[5m]) > 10",
+                        "for": "5m",
+                        "severity": "warning"
+                    }
+                }
+            }
+        }
+    },
+    "grafana": {
+        "defaultDashboards": true,
+        "alerting": {
+            "enabled": true,
+            "rules": ["system", "mysql", "nginx"],
+            "channels": {
+                "email": {
+                    "enabled": true,
+                    "smtp": {
+                        "host": "smtp.example.com",
+                        "port": 587,
+                        "secure": true
+                    }
+                },
+                "slack": {
+                    "enabled": true,
+                    "webhook": true
+                },
+                "telegram": {
+                    "enabled": true,
+                    "bot": true
+                },
+                "webhook": {
+                    "enabled": true,
+                    "endpoints": ["custom-endpoint"]
+                }
+            },
+            "policies": {
+                "critical": {
+                    "channels": ["email", "slack", "telegram"],
+                    "repeat": "30m",
+                    "groupBy": ["alertname", "instance"]
+                },
+                "warning": {
+                    "channels": ["slack"],
+                    "repeat": "2h",
+                    "groupBy": ["alertname"]
+                },
+                "info": {
+                    "channels": ["slack"],
+                    "repeat": "6h"
+                }
+            }
+        },
+        "dashboards": {
+            "system": {
+                "title": "System Overview",
+                "refresh": "1m",
+                "panels": [
+                    "cpu_usage",
+                    "memory_usage",
+                    "disk_io",
+                    "network_traffic"
+                ]
+            },
+            "nginx": {
+                "title": "Nginx Metrics",
+                "refresh": "30s",
+                "panels": [
+                    "requests_per_second",
+                    "status_codes",
+                    "response_time",
+                    "active_connections"
+                ]
+            },
+            "mysql": {
+                "title": "MySQL Performance",
+                "refresh": "1m",
+                "panels": [
+                    "queries_per_second",
+                    "slow_queries",
+                    "connections",
+                    "buffer_pool_usage"
+                ]
+            },
+            "security": {
+                "title": "Security Overview",
+                "refresh": "5m",
+                "panels": [
+                    "failed_logins",
+                    "ssl_expiry",
+                    "firewall_events",
+                    "auth_attempts"
+                ]
+            }
+        }
+    },
+    "ansible": {
+        "inventoryFile": "inventory.yml",
+        "configFile": "ansible.cfg",
+        "playbookDirectory": "playbooks",
+        "rolesDirectory": "roles"
+    },
+    "alertmanager": {
+        "config": {
+            "global": {
+                "resolve_timeout": "5m",
+                "smtp_smarthost": "smtp.example.com:587",
+                "smtp_from": "alertmanager@example.com"
+            },
+            "route": {
+                "group_by": ["alertname", "cluster", "service"],
+                "group_wait": "30s",
+                "group_interval": "5m",
+                "repeat_interval": "4h",
+                "receiver": "default-receiver",
+                "routes": [
+                    {
+                        "match": {
+                            "severity": "critical"
+                        },
+                        "receiver": "critical-receiver",
+                        "repeat_interval": "30m"
+                    },
+                    {
+                        "match": {
+                            "severity": "warning"
+                        },
+                        "receiver": "warning-receiver",
+                        "repeat_interval": "2h"
+                    }
+                ]
+            },
+            "inhibit_rules": [
+                {
+                    "source_match": {
+                        "severity": "critical"
+                    },
+                    "target_match": {
+                        "severity": "warning"
+                    },
+                    "equal": ["alertname", "cluster", "service"]
+                }
+            ]
+        }
+    }
+} 
