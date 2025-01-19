@@ -37,22 +37,9 @@ const generateToken = (user: any) => {
 };
 
 export async function POST(request: Request) {
-    // 添加 CORS 头部
-    const origin = request.headers.get('origin') || '*';
-    const responseHeaders = {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Max-Age': '86400',
-    };
-
-    // 处理 OPTIONS 请求
-    if (request.method === 'OPTIONS') {
-        return new NextResponse(null, { headers: responseHeaders });
-    }
-
     try {
-        const { username, password } = await request.json();
+        const body = await request.json();
+        const { username, password } = body;
 
         // 查找用户
         const user = mockUsers.find(
@@ -61,11 +48,8 @@ export async function POST(request: Request) {
 
         if (!user) {
             return NextResponse.json(
-                { message: 'Invalid credentials' },
-                { 
-                    status: 401,
-                    headers: responseHeaders
-                }
+                { success: false, message: 'Invalid credentials' },
+                { status: 401 }
             );
         }
 
@@ -75,31 +59,27 @@ export async function POST(request: Request) {
         // 返回用户信息（不包含密码）
         const { password: _, ...userWithoutPassword } = user;
 
-        return NextResponse.json(
-            {
+        return NextResponse.json({
+            success: true,
+            data: {
                 token,
                 user: userWithoutPassword,
-            },
-            { headers: responseHeaders }
-        );
+            }
+        });
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json(
-            { message: 'Internal server error' },
-            { 
-                status: 500,
-                headers: responseHeaders
-            }
+            { success: false, message: 'Internal server error' },
+            { status: 500 }
         );
     }
 }
 
 // 处理 OPTIONS 请求
-export async function OPTIONS(request: Request) {
-    const origin = request.headers.get('origin') || '*';
-    return new NextResponse(null, {
+export async function OPTIONS() {
+    return NextResponse.json({}, {
         headers: {
-            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
