@@ -19,7 +19,7 @@ import {
 } from 'react-admin';
 
 const UserFilters = [
-  <SearchInput source="q" label="搜索" alwaysOn />,
+  <SearchInput source="q" alwaysOn placeholder="搜索..." />,
   <TextInput source="username" label="用户名" />,
   <TextInput source="email" label="邮箱" />,
   <SelectInput
