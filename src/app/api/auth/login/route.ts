@@ -1,30 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-
-// 模拟用户数据
-const mockUsers = [
-    {
-        id: 1,
-        username: 'admin',
-        password: 'admin',
-        role: 'admin',
-        email: 'admin@example.com',
-    },
-    {
-        id: 2,
-        username: 'devops',
-        password: 'devops',
-        role: 'devops',
-        email: 'devops@example.com',
-    },
-    {
-        id: 3,
-        username: 'developer',
-        password: 'developer',
-        role: 'developer',
-        email: 'developer@example.com',
-    },
-];
+import { dataProvider } from '@/lib/providers/dataProvider';
 
 // 生成简单的 token
 const generateToken = (user: any) => {
@@ -41,8 +17,15 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { username, password } = body;
 
+        // 从 dataProvider 获取用户列表
+        const { data: users } = await dataProvider.getList('users', {
+            pagination: { page: 1, perPage: 100 },
+            sort: { field: 'id', order: 'ASC' },
+            filter: {},
+        });
+
         // 查找用户
-        const user = mockUsers.find(
+        const user = users.find(
             u => u.username === username && u.password === password
         );
 
@@ -59,7 +42,6 @@ export async function POST(request: Request) {
         // 返回用户信息（不包含密码）
         const { password: _, ...userWithoutPassword } = user;
 
-        // 直接返回 token 和 user，不包装在 success 和 data 中
         return NextResponse.json({
             token,
             user: userWithoutPassword,

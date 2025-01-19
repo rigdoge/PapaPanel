@@ -3,6 +3,7 @@ import { DataProvider, RaRecord, Identifier } from 'react-admin';
 interface User extends RaRecord {
   username: string;
   email: string;
+  password: string;
   role: string;
   department: string;
   position: string;
@@ -61,6 +62,7 @@ const mockData = {
         {
             id: 1,
             username: 'admin',
+            password: 'admin',
             email: 'admin@example.com',
             role: 'admin',
             department: '技术部',
@@ -73,6 +75,7 @@ const mockData = {
         {
             id: 2,
             username: 'devops',
+            password: 'devops',
             email: 'devops@example.com',
             role: 'devops',
             department: '运维部',
@@ -85,6 +88,7 @@ const mockData = {
         {
             id: 3,
             username: 'developer',
+            password: 'developer',
             email: 'developer@example.com',
             role: 'developer',
             department: '研发部',
