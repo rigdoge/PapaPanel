@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
         if (!user) {
             return NextResponse.json(
-                { success: false, message: 'Invalid credentials' },
+                { message: 'Invalid credentials' },
                 { status: 401 }
             );
         }
@@ -59,17 +59,15 @@ export async function POST(request: Request) {
         // 返回用户信息（不包含密码）
         const { password: _, ...userWithoutPassword } = user;
 
+        // 直接返回 token 和 user，不包装在 success 和 data 中
         return NextResponse.json({
-            success: true,
-            data: {
-                token,
-                user: userWithoutPassword,
-            }
+            token,
+            user: userWithoutPassword,
         });
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json(
-            { success: false, message: 'Internal server error' },
+            { message: 'Internal server error' },
             { status: 500 }
         );
     }
