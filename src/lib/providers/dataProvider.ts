@@ -1,4 +1,57 @@
-import { DataProvider } from 'react-admin';
+import { DataProvider, RaRecord, Identifier } from 'react-admin';
+
+interface User extends RaRecord {
+  username: string;
+  email: string;
+  role: string;
+  department: string;
+  position: string;
+  phone: string;
+  is_active: boolean;
+  created_at: string;
+  last_login: string;
+}
+
+interface Server extends RaRecord {
+  name: string;
+  ip: string;
+  status: string;
+  os: string;
+  cpu: string;
+  memory: string;
+  disk: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Site extends RaRecord {
+  name: string;
+  domain: string;
+  status: string;
+  server_id: number;
+  php_version: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Backup extends RaRecord {
+  name: string;
+  type: string;
+  status: string;
+  size: string;
+  site_id: number;
+  created_at: string;
+}
+
+interface Monitoring extends RaRecord {
+  name: string;
+  type: string;
+  status: string;
+  target_id: number;
+  target_type: string;
+  last_check: string;
+  next_check: string;
+}
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -10,6 +63,9 @@ const mockData = {
             username: 'admin',
             email: 'admin@example.com',
             role: 'admin',
+            department: '技术部',
+            position: '系统管理员',
+            phone: '13800138000',
             is_active: true,
             created_at: new Date().toISOString(),
             last_login: new Date().toISOString(),
@@ -19,6 +75,9 @@ const mockData = {
             username: 'devops',
             email: 'devops@example.com',
             role: 'devops',
+            department: '运维部',
+            position: '运维工程师',
+            phone: '13800138001',
             is_active: true,
             created_at: new Date().toISOString(),
             last_login: new Date().toISOString(),
@@ -28,22 +87,81 @@ const mockData = {
             username: 'developer',
             email: 'developer@example.com',
             role: 'developer',
+            department: '研发部',
+            position: '开发工程师',
+            phone: '13800138002',
             is_active: true,
             created_at: new Date().toISOString(),
             last_login: new Date().toISOString(),
         }
-    ],
+    ] as User[],
+    servers: [
+        {
+            id: 1,
+            name: 'Web Server 1',
+            ip: '192.168.1.100',
+            status: 'running',
+            os: 'Ubuntu 22.04 LTS',
+            cpu: '4 cores',
+            memory: '8GB',
+            disk: '100GB',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+    ] as Server[],
+    sites: [
+        {
+            id: 1,
+            name: 'Example Site',
+            domain: 'example.com',
+            status: 'running',
+            server_id: 1,
+            php_version: '8.2',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+    ] as Site[],
+    backups: [
+        {
+            id: 1,
+            name: 'Daily Backup',
+            type: 'full',
+            status: 'completed',
+            size: '1.2GB',
+            site_id: 1,
+            created_at: new Date().toISOString(),
+        }
+    ] as Backup[],
+    monitoring: [
+        {
+            id: 1,
+            name: 'HTTP Check',
+            type: 'http',
+            status: 'up',
+            target_id: 1,
+            target_type: 'site',
+            last_check: new Date().toISOString(),
+            next_check: new Date(Date.now() + 300000).toISOString(),
+        }
+    ] as Monitoring[],
+};
+
+type ResourceType = {
+    users: User;
+    servers: Server;
+    sites: Site;
+    backups: Backup;
+    monitoring: Monitoring;
 };
 
 export const dataProvider: DataProvider = {
     getList: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
+        if (resource in mockData) {
             const { page, perPage } = params.pagination;
             const { field, order } = params.sort;
             const { filter } = params;
 
-            let items = mockData.users;
+            let items = mockData[resource as keyof typeof mockData];
 
             // 处理筛选
             if (filter) {
@@ -55,7 +173,7 @@ export const dataProvider: DataProvider = {
                                 value => value && value.toString().toLowerCase().includes(searchStr)
                             );
                         }
-                        return item[key] === filter[key];
+                        return (item as any)[key] === filter[key];
                     });
                 });
             }
@@ -63,9 +181,9 @@ export const dataProvider: DataProvider = {
             // 处理排序
             items = [...items].sort((a, b) => {
                 if (order === 'ASC') {
-                    return a[field] > b[field] ? 1 : -1;
+                    return (a as any)[field] > (b as any)[field] ? 1 : -1;
                 } else {
-                    return a[field] < b[field] ? 1 : -1;
+                    return (a as any)[field] < (b as any)[field] ? 1 : -1;
                 }
             });
 
@@ -74,265 +192,126 @@ export const dataProvider: DataProvider = {
             const end = page * perPage;
             const paginatedItems = items.slice(start, end);
 
-            return Promise.resolve({
+            return {
                 data: paginatedItems,
                 total: items.length,
-            });
+            };
         }
 
-        // 其他资源使用 API
-        const query = {
-            sort: JSON.stringify([params.sort.field, params.sort.order]),
-            range: JSON.stringify([(params.pagination.page - 1) * params.pagination.perPage, params.pagination.page * params.pagination.perPage - 1]),
-            filter: JSON.stringify(params.filter),
-        };
-        const url = new URL(`${apiUrl}/${resource}`);
-        Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
-
-        const token = localStorage.getItem('token');
-        const response = await fetch(url.toString(), {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json.data,
-            total: json.total,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     getOne: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const user = mockData.users.find(u => u.id === Number(params.id));
-            return Promise.resolve({
-                data: user || { id: params.id },
-            });
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const item = items.find(i => i.id === Number(params.id));
+            if (!item) throw new Error(`${resource} not found: ${params.id}`);
+            return { data: item };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}/${params.id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     getMany: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const users = mockData.users.filter(u => params.ids.includes(u.id));
-            return Promise.resolve({
-                data: users,
-            });
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const filteredItems = items.filter(i => params.ids.includes(i.id));
+            return { data: filteredItems };
         }
 
-        // 其他资源使用 API
-        const query = {
-            filter: JSON.stringify({ id: params.ids }),
-        };
-        const url = new URL(`${apiUrl}/${resource}`);
-        Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
-
-        const token = localStorage.getItem('token');
-        const response = await fetch(url.toString(), {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     getManyReference: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
+        if (resource in mockData) {
             const { page, perPage } = params.pagination;
-            const items = mockData.users
-                .filter(item => item[params.target] === params.id)
+            const items = mockData[resource as keyof typeof mockData]
+                .filter(item => (item as any)[params.target] === params.id)
                 .slice((page - 1) * perPage, page * perPage);
             
-            return Promise.resolve({
+            return {
                 data: items,
                 total: items.length,
-            });
+            };
         }
 
-        // 其他资源使用 API
-        const { page, perPage } = params.pagination;
-        const { field, order } = params.sort;
-        const query = {
-            sort: JSON.stringify([field, order]),
-            range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
-            filter: JSON.stringify({
-                ...params.filter,
-                [params.target]: params.id,
-            }),
-        };
-        const url = new URL(`${apiUrl}/${resource}`);
-        Object.keys(query).forEach(key => url.searchParams.append(key, query[key]));
-
-        const token = localStorage.getItem('token');
-        const response = await fetch(url.toString(), {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json.data,
-            total: json.total,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     create: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const newId = Math.max(0, ...mockData.users.map(u => u.id)) + 1;
-            const newUser = {
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const newId = Math.max(0, ...items.map(i => i.id)) + 1;
+            const newItem = {
                 ...params.data,
                 id: newId,
                 created_at: new Date().toISOString(),
-                last_login: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             };
-            mockData.users.push(newUser);
-            return Promise.resolve({
-                data: newUser,
-            });
+            items.push(newItem as any);
+            return { data: newItem };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}`, {
-            method: 'POST',
-            body: JSON.stringify(params.data),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: { ...params.data, id: json.id },
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     update: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const index = mockData.users.findIndex(u => u.id === Number(params.id));
-            if (index === -1) return Promise.reject();
-            const updatedUser = { ...mockData.users[index], ...params.data };
-            mockData.users[index] = updatedUser;
-            return Promise.resolve({
-                data: updatedUser,
-            });
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const index = items.findIndex(i => i.id === Number(params.id));
+            if (index === -1) throw new Error(`${resource} not found: ${params.id}`);
+            const updatedItem = { 
+                ...items[index], 
+                ...params.data,
+                updated_at: new Date().toISOString(),
+            };
+            items[index] = updatedItem as any;
+            return { data: updatedItem };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'PUT',
-            body: JSON.stringify(params.data),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     updateMany: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const updatedUsers = mockData.users.map(user =>
-                params.ids.includes(user.id) ? { ...user, ...params.data } : user
-            );
-            mockData.users = updatedUsers;
-            return Promise.resolve({
-                data: params.ids,
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const updates = items.map(item => {
+                if (params.ids.includes(item.id)) {
+                    return { 
+                        ...item, 
+                        ...params.data,
+                        updated_at: new Date().toISOString(),
+                    };
+                }
+                return item;
             });
+            items.splice(0, items.length, ...(updates as any));
+            return { data: params.ids };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}`, {
-            method: 'PUT',
-            body: JSON.stringify({ ids: params.ids, data: params.data }),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     delete: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const index = mockData.users.findIndex(u => u.id === Number(params.id));
-            if (index === -1) return Promise.reject();
-            const deletedUser = mockData.users[index];
-            mockData.users = [
-                ...mockData.users.slice(0, index),
-                ...mockData.users.slice(index + 1),
-            ];
-            return Promise.resolve({
-                data: deletedUser,
-            });
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const index = items.findIndex(i => i.id === Number(params.id));
+            if (index === -1) throw new Error(`${resource} not found: ${params.id}`);
+            const [deletedItem] = items.splice(index, 1);
+            return { data: deletedItem };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 
     deleteMany: async (resource, params) => {
-        // 如果是用户资源，使用模拟数据
-        if (resource === 'users') {
-            const deletedUsers = mockData.users.filter(u => params.ids.includes(u.id));
-            mockData.users = mockData.users.filter(u => !params.ids.includes(u.id));
-            return Promise.resolve({
-                data: deletedUsers,
-            });
+        if (resource in mockData) {
+            const items = mockData[resource as keyof typeof mockData];
+            const remaining = items.filter(i => !params.ids.includes(i.id));
+            items.splice(0, items.length, ...(remaining as any));
+            return { data: params.ids };
         }
 
-        // 其他资源使用 API
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}/${resource}`, {
-            method: 'DELETE',
-            body: JSON.stringify({ ids: params.ids }),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const json = await response.json();
-        return {
-            data: json,
-        };
+        throw new Error(`Unknown resource: ${resource}`);
     },
 }; 

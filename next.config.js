@@ -1,17 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  output: 'export',
+  images: {
+    unoptimized: true
+  },
   compiler: {
+    styledComponents: true,
     emotion: true
   },
   experimental: {
-    serverActions: true,
     serverComponentsExternalPackages: ['@mui/material']
-  },
-  images: {
-    domains: ['localhost'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    formats: ['image/webp']
   },
   env: {
     API_URL: process.env.NODE_ENV === 'production' 

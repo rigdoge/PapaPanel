@@ -25,7 +25,7 @@ import MonitorIcon from '@mui/icons-material/Monitor';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-const AdminApp = () => {
+export const AdminApp = () => {
   return (
     <Admin
       layout={AppLayout}
@@ -38,6 +38,20 @@ const AdminApp = () => {
       defaultTheme="light"
       requireAuth
     >
+      <Resource
+        name="users"
+        list={UserList}
+        edit={UserEdit}
+        create={UserCreate}
+        icon={PeopleIcon}
+        options={{ 
+          label: '用户管理',
+          menu: {
+            icon: SettingsIcon,
+            group: 'settings'
+          }
+        }}
+      />
       <Resource
         name="servers"
         list={ServerList}
@@ -68,21 +82,6 @@ const AdminApp = () => {
         edit={MonitoringEdit}
         icon={MonitorIcon}
         options={{ label: '监控' }}
-      />
-      <Resource
-        name="users"
-        list={UserList}
-        edit={UserEdit}
-        create={UserCreate}
-        icon={PeopleIcon}
-        options={{ 
-          label: '用户管理',
-          menu: {
-            icon: SettingsIcon,
-            group: 'settings',
-            label: '用户管理'
-          }
-        }}
       />
     </Admin>
   );
