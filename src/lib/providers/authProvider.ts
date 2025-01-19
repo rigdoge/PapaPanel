@@ -1,5 +1,7 @@
 import { AuthProvider } from 'react-admin';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 // 模拟用户数据
 const mockUsers = [
     {
@@ -26,56 +28,109 @@ const mockUsers = [
 ];
 
 export const authProvider: AuthProvider = {
-    login: ({ username, password }) => {
-        // 在模拟数据中查找用户
-        const user = mockUsers.find(
-            u => u.username === username && u.password === password
-        );
+    login: async ({ username, password }) => {
+        try {
+            const response = await fetch(`${apiUrl}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ username, password }),
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Invalid credentials');
+            }
 
-        if (!user) {
-            return Promise.reject(new Error('Invalid credentials'));
+            const { token, user } = await response.json();
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            return Promise.resolve();
+        } catch (error) {
+            return Promise.reject(error instanceof Error ? error : new Error('Network error'));
         }
-
-        // 存储用户信息（不包含密码）
-        const { password: _, ...userWithoutPassword } = user;
-        localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-        localStorage.setItem('token', 'mock-token');
-        
-        return Promise.resolve();
     },
 
-    logout: () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        return Promise.resolve();
+    logout: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch(`${apiUrl}/auth/logout`, {
+                    method: 'POST',
+                    headers: new Headers({
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }),
+                });
+            }
+        } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return Promise.resolve();
+        }
     },
 
-    checkError: (error) => {
+    checkError: async (error) => {
         const status = error.status;
         if (status === 401 || status === 403) {
-            localStorage.removeItem('user');
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
             return Promise.reject();
         }
         return Promise.resolve();
     },
 
-    checkAuth: () => {
-        const user = localStorage.getItem('user');
-        return user ? Promise.resolve() : Promise.reject();
+    checkAuth: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return Promise.reject();
+
+        try {
+            const response = await fetch(`${apiUrl}/auth/check`, {
+                headers: new Headers({
+                    'Authorization': `Bearer ${token}`,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Authentication failed');
+            }
+
+            return Promise.resolve();
+        } catch (error) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return Promise.reject(error);
+        }
     },
 
-    getPermissions: () => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        return Promise.resolve(user.role);
+    getPermissions: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return Promise.reject();
+
+        try {
+            const response = await fetch(`${apiUrl}/auth/permissions`, {
+                headers: new Headers({
+                    'Authorization': `Bearer ${token}`,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to get permissions');
+            }
+
+            const { permissions } = await response.json();
+            return Promise.resolve(permissions);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     },
 
-    getIdentity: () => {
+    getIdentity: async () => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         return Promise.resolve({
             id: user.id,
             fullName: user.username,
-            avatar: undefined,
+            avatar: user.avatar,
             role: user.role,
         });
     },

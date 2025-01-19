@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 
-// 这里模拟数据库中的用户
-const users = [
+// 模拟用户数据
+const mockUsers = [
     {
         id: 1,
         username: 'admin',
-        password: 'admin', // 实际应用中应该使用加密密码
+        password: 'admin',
         role: 'admin',
         email: 'admin@example.com',
     },
@@ -26,47 +25,46 @@ const users = [
     },
 ];
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// 生成简单的 token
+const generateToken = (user: any) => {
+    return Buffer.from(JSON.stringify({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        exp: Date.now() + 24 * 60 * 60 * 1000, // 24小时过期
+    })).toString('base64');
+};
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { username, password } = body;
+        const { username, password } = await request.json();
 
-        // 验证用户
-        const user = users.find(
-            (u) => u.username === username && u.password === password
+        // 查找用户
+        const user = mockUsers.find(
+            u => u.username === username && u.password === password
         );
 
         if (!user) {
             return NextResponse.json(
-                { error: 'Invalid credentials' },
+                { message: 'Invalid credentials' },
                 { status: 401 }
             );
         }
 
-        // 生成 JWT token
-        const token = jwt.sign(
-            { 
-                id: user.id,
-                username: user.username,
-                role: user.role 
-            },
-            JWT_SECRET,
-            { expiresIn: '1d' }
-        );
+        // 生成 token
+        const token = generateToken(user);
 
-        // 返回用户信息和 token（不包含密码）
+        // 返回用户信息（不包含密码）
         const { password: _, ...userWithoutPassword } = user;
-        
+
         return NextResponse.json({
+            token,
             user: userWithoutPassword,
-            token
         });
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { message: 'Internal server error' },
             { status: 500 }
         );
     }
