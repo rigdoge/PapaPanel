@@ -39,6 +39,13 @@ export const AdminApp = () => {
       requireAuth
     >
       <Resource
+        name="settings"
+        icon={SettingsIcon}
+        options={{ 
+          label: '系统设置'
+        }}
+      />
+      <Resource
         name="users"
         list={UserList}
         edit={UserEdit}
@@ -47,8 +54,7 @@ export const AdminApp = () => {
         options={{ 
           label: '用户管理',
           menu: {
-            icon: SettingsIcon,
-            group: 'settings'
+            parent: 'settings'
           }
         }}
       />
