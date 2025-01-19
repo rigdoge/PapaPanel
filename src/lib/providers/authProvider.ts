@@ -1,6 +1,9 @@
 import { AuthProvider } from 'react-admin';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+// 使用当前窗口的 origin 作为 API URL 的基础
+const apiUrl = typeof window !== 'undefined' 
+    ? window.location.origin + '/api'
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // 模拟用户数据
 const mockUsers = [
