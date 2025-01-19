@@ -16,6 +16,7 @@ import { MonitoringList, MonitoringEdit } from '../pages/monitoring';
 import { UserList } from './users/UserList';
 import { UserEdit } from './users/UserEdit';
 import { UserCreate } from './users/UserCreate';
+import { SettingsList } from './settings/SettingsList';
 
 // 图标
 import DnsIcon from '@mui/icons-material/Dns';
@@ -40,6 +41,7 @@ export const AdminApp = () => {
     >
       <Resource
         name="settings"
+        list={SettingsList}
         icon={SettingsIcon}
         options={{ 
           label: '系统设置'
