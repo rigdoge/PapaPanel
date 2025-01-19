@@ -1,4 +1,4 @@
-import { DataProvider, RaRecord, Identifier } from 'react-admin';
+import { DataProvider, RaRecord, Identifier, GetListResult, GetOneResult, GetManyResult, GetManyReferenceResult, CreateResult, UpdateResult, DeleteResult } from 'react-admin';
 
 interface User extends RaRecord {
   username: string;
@@ -159,7 +159,7 @@ type ResourceType = {
 };
 
 export const dataProvider: DataProvider = {
-    getList: async (resource, params) => {
+    getList: async <RecordType extends RaRecord>(resource: string, params: any): Promise<GetListResult<RecordType>> => {
         if (resource in mockData) {
             const { page, perPage } = params.pagination;
             const { field, order } = params.sort;
@@ -197,7 +197,7 @@ export const dataProvider: DataProvider = {
             const paginatedItems = items.slice(start, end);
 
             return {
-                data: paginatedItems,
+                data: paginatedItems as unknown as RecordType[],
                 total: items.length,
             };
         }
@@ -205,28 +205,28 @@ export const dataProvider: DataProvider = {
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    getOne: async (resource, params) => {
+    getOne: async <RecordType extends RaRecord>(resource: string, params: any): Promise<GetOneResult<RecordType>> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const item = items.find(i => i.id === Number(params.id));
             if (!item) throw new Error(`${resource} not found: ${params.id}`);
-            return { data: item };
+            return { data: item as unknown as RecordType };
         }
 
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    getMany: async (resource, params) => {
+    getMany: async <RecordType extends RaRecord>(resource: string, params: any): Promise<GetManyResult<RecordType>> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const filteredItems = items.filter(i => params.ids.includes(i.id));
-            return { data: filteredItems };
+            return { data: filteredItems as unknown as RecordType[] };
         }
 
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    getManyReference: async (resource, params) => {
+    getManyReference: async <RecordType extends RaRecord>(resource: string, params: any): Promise<GetManyReferenceResult<RecordType>> => {
         if (resource in mockData) {
             const { page, perPage } = params.pagination;
             const items = mockData[resource as keyof typeof mockData]
@@ -234,7 +234,7 @@ export const dataProvider: DataProvider = {
                 .slice((page - 1) * perPage, page * perPage);
             
             return {
-                data: items,
+                data: items as unknown as RecordType[],
                 total: items.length,
             };
         }
@@ -242,10 +242,10 @@ export const dataProvider: DataProvider = {
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    create: async (resource, params) => {
+    create: async <RecordType extends Omit<RaRecord, "id">>(resource: string, params: any): Promise<CreateResult<RecordType & { id: Identifier }>> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
-            const newId = Math.max(0, ...items.map(i => i.id)) + 1;
+            const newId = Math.max(0, ...items.map(i => Number(i.id))) + 1;
             const newItem = {
                 ...params.data,
                 id: newId,
@@ -253,13 +253,13 @@ export const dataProvider: DataProvider = {
                 updated_at: new Date().toISOString(),
             };
             items.push(newItem as any);
-            return { data: newItem };
+            return { data: newItem as unknown as RecordType & { id: Identifier } };
         }
 
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    update: async (resource, params) => {
+    update: async <RecordType extends RaRecord>(resource: string, params: any): Promise<UpdateResult<RecordType>> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const index = items.findIndex(i => i.id === Number(params.id));
@@ -270,13 +270,13 @@ export const dataProvider: DataProvider = {
                 updated_at: new Date().toISOString(),
             };
             items[index] = updatedItem as any;
-            return { data: updatedItem };
+            return { data: updatedItem as unknown as RecordType };
         }
 
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    updateMany: async (resource, params) => {
+    updateMany: async <RecordType extends RaRecord>(resource: string, params: any): Promise<{ data: Identifier[] }> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const updates = items.map(item => {
@@ -296,19 +296,19 @@ export const dataProvider: DataProvider = {
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    delete: async (resource, params) => {
+    delete: async <RecordType extends RaRecord>(resource: string, params: any): Promise<DeleteResult<RecordType>> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const index = items.findIndex(i => i.id === Number(params.id));
             if (index === -1) throw new Error(`${resource} not found: ${params.id}`);
             const [deletedItem] = items.splice(index, 1);
-            return { data: deletedItem };
+            return { data: deletedItem as unknown as RecordType };
         }
 
         throw new Error(`Unknown resource: ${resource}`);
     },
 
-    deleteMany: async (resource, params) => {
+    deleteMany: async (resource: string, params: any): Promise<{ data: Identifier[] }> => {
         if (resource in mockData) {
             const items = mockData[resource as keyof typeof mockData];
             const remaining = items.filter(i => !params.ids.includes(i.id));

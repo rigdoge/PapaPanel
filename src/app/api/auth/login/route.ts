@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { dataProvider } from '@/lib/providers/dataProvider';
 
+// 设置为动态路由
+export const dynamic = 'force-dynamic';
+
 // 生成简单的 token
 const generateToken = (user: any) => {
     return Buffer.from(JSON.stringify({
