@@ -1,4 +1,5 @@
 import { AuthProvider } from 'ra-core';
+import { signIn, signOut, getSession } from 'next-auth/react';
 
 // 使用当前窗口的 origin 作为 API URL 的基础
 const apiUrl = typeof window !== 'undefined' 
@@ -32,63 +33,49 @@ const mockUsers = [
 
 export const authProvider: AuthProvider = {
     login: async ({ username, password }) => {
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
+        const result = await signIn('credentials', {
+            username,
+            password,
+            redirect: false,
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message);
+        if (result?.error) {
+            throw new Error(result.error);
         }
-
-        const { token } = await response.json();
-        localStorage.setItem('token', token);
     },
 
-    logout: () => {
-        localStorage.removeItem('token');
+    logout: async () => {
+        await signOut({ redirect: false });
         return Promise.resolve();
     },
 
     checkError: ({ status }) => {
         if (status === 401 || status === 403) {
-            localStorage.removeItem('token');
             return Promise.reject();
         }
         return Promise.resolve();
     },
 
-    checkAuth: () => {
-        return localStorage.getItem('token')
-            ? Promise.resolve()
-            : Promise.reject();
+    checkAuth: async () => {
+        const session = await getSession();
+        return session ? Promise.resolve() : Promise.reject();
     },
 
-    getPermissions: () => {
-        const token = localStorage.getItem('token');
-        if (!token) return Promise.reject();
-        return Promise.resolve();
+    getPermissions: async () => {
+        const session = await getSession();
+        return session?.user?.role ? Promise.resolve(session.user.role) : Promise.reject();
     },
 
     getIdentity: async () => {
-        const response = await fetch('/api/auth/me', {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to get user identity');
+        const session = await getSession();
+        if (!session?.user) {
+            throw new Error('No user session found');
         }
 
-        const user = await response.json();
         return Promise.resolve({
-            id: user.id,
-            fullName: user.username,
+            id: session.user.id || '0',
+            fullName: session.user.name || 'Unknown',
+            avatar: session.user.image,
         });
     },
 }; 
