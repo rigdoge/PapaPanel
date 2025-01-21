@@ -1,448 +1,307 @@
 {
     "project": {
         "name": "PapaPanel",
-        "description": "基于 Next.js 和 React Admin 的 LEMP 环境自动化部署和监控管理平台",
-        "version": "1.0.0",
+        "description": "基于 Strapi 的 LEMP 环境自动化部署和监控管理平台",
+        "version": "2.0.0",
         "author": "TattooMaster",
         "repository": {
             "type": "git",
             "url": "https://github.com/TattooMaster/PapaPanel"
-        },
-        "stack": {
-            "frontend": {
-                "framework": "Next.js",
-                "admin": "React Admin",
-                "version": {
-                    "next": "14.1.0",
-                    "reactAdmin": "4.16.0",
-                    "typescript": "5.3.3"
-                },
+        }
+    },
+    "architecture": {
+        "backend": {
+            "cms": {
+                "framework": "Strapi",
+                "version": "4.20.0",
+                "database": "postgres",
                 "features": {
-                    "ssr": false,
-                    "appDir": true,
-                    "typescript": true,
-                    "eslint": true,
-                    "jest": true,
-                    "tailwind": true
+                    "auth": true,
+                    "api": true,
+                    "webhooks": true,
+                    "i18n": true
                 }
             },
-            "monitoring": ["Prometheus", "Grafana", "Alertmanager"],
-            "automation": ["Ansible", "Shell", "Terraform"],
-            "environment": "LEMP"
-        },
-        "configFiles": {
-            "features": "./config/features.json",
-            "environments": "./config/environments.json",
-            "monitoring": "./config/monitoring.json",
-            "security": "./config/security.json",
-            "development": "./config/development.json",
-            "documentation": "./config/documentation.json",
-            "terraform": "./config/terraform.json"
-        }
-    },
-    "nextjs": {
-        "compiler": {
-            "styledComponents": true,
-            "emotion": true
-        },
-        "experimental": {
-            "serverActions": true,
-            "serverComponentsExternalPackages": ["@mui/material"]
-        },
-        "typescript": {
-            "strict": true,
-            "strictNullChecks": true
-        },
-        "eslint": {
-            "ignoreDuringBuilds": false,
-            "dirs": ["pages", "components", "lib", "src"]
-        },
-        "images": {
-            "domains": ["localhost"],
-            "deviceSizes": [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-            "formats": ["image/webp"]
-        },
-        "env": {
-            "development": {
-                "API_URL": "http://localhost:3000/api"
-            },
-            "production": {
-                "API_URL": "https://api.example.com"
-            }
-        }
-    },
-    "reactAdmin": {
-        "theme": {
-            "palette": {
-                "mode": "dark",
-                "primary": {
-                    "main": "#1976d2",
-                    "light": "#42a5f5",
-                    "dark": "#1565c0"
+            "models": {
+                "server": {
+                    "fields": {
+                        "hostname": "string",
+                        "ip": "string",
+                        "ssh_port": "integer",
+                        "ssh_key": "text",
+                        "status": "enumeration",
+                        "server_type": "enumeration",
+                        "created_at": "datetime",
+                        "updated_at": "datetime"
+                    },
+                    "relations": {
+                        "sites": "hasMany",
+                        "monitors": "hasMany"
+                    }
                 },
-                "secondary": {
-                    "main": "#9c27b0",
-                    "light": "#ba68c8",
-                    "dark": "#7b1fa2"
-                }
-            },
-            "components": {
-                "MuiDrawer": {
-                    "styleOverrides": {
-                        "paper": {
-                            "backgroundColor": "#1e1e1e"
-                        }
+                "site": {
+                    "fields": {
+                        "domain": "string",
+                        "php_version": "string",
+                        "nginx_config": "json",
+                        "ssl_status": "boolean",
+                        "created_at": "datetime",
+                        "updated_at": "datetime"
+                    },
+                    "relations": {
+                        "server": "belongsTo",
+                        "backups": "hasMany"
+                    }
+                },
+                "playbook": {
+                    "fields": {
+                        "name": "string",
+                        "description": "text",
+                        "type": "enumeration",
+                        "ansible_file": "string",
+                        "variables": "json",
+                        "created_at": "datetime",
+                        "updated_at": "datetime"
+                    }
+                },
+                "monitor": {
+                    "fields": {
+                        "name": "string",
+                        "type": "enumeration",
+                        "endpoint": "string",
+                        "auth_token": "password",
+                        "created_at": "datetime",
+                        "updated_at": "datetime"
+                    },
+                    "relations": {
+                        "server": "belongsTo",
+                        "alerts": "hasMany"
+                    }
+                },
+                "alert": {
+                    "fields": {
+                        "name": "string",
+                        "severity": "enumeration",
+                        "rules": "json",
+                        "notification_channel": "json",
+                        "created_at": "datetime",
+                        "updated_at": "datetime"
+                    },
+                    "relations": {
+                        "monitor": "belongsTo"
                     }
                 }
             }
         },
-        "layout": {
-            "sidebar": {
-                "width": 240,
-                "closed": false
-            },
-            "appBar": {
-                "height": 64
+        "automation": {
+            "ansible": {
+                "version": "2.16.2",
+                "playbooks": {
+                    "lemp": {
+                        "description": "LEMP环境安装",
+                        "tasks": [
+                            "nginx_install",
+                            "mysql_install",
+                            "php_install",
+                            "security_hardening"
+                        ]
+                    },
+                    "site": {
+                        "description": "站点部署",
+                        "tasks": [
+                            "nginx_config",
+                            "ssl_setup",
+                            "php_config",
+                            "db_create"
+                        ]
+                    },
+                    "backup": {
+                        "description": "数据备份",
+                        "tasks": [
+                            "db_backup",
+                            "files_backup",
+                            "remote_sync"
+                        ]
+                    },
+                    "monitor": {
+                        "description": "监控部署",
+                        "tasks": [
+                            "prometheus_install",
+                            "grafana_install",
+                            "loki_install",
+                            "exporters_setup"
+                        ]
+                    }
+                },
+                "inventory": {
+                    "groups": [
+                        "web_servers",
+                        "db_servers",
+                        "monitor_servers"
+                    ]
+                }
             }
-        },
-        "auth": {
-            "loginPage": true,
-            "authProvider": "custom",
-            "methods": ["jwt", "oauth2"]
-        },
-        "i18n": {
-            "defaultLocale": "zh-CN",
-            "locales": ["en", "zh-CN"]
-        }
-    },
-    "editor": {
-        "formatOnSave": true,
-        "tabSize": 2,
-        "insertSpaces": true,
-        "wordWrap": "on",
-        "defaultFormatter": "prettier",
-        "rulers": [80, 100],
-        "bracketPairColorization": true,
-        "snippets": true,
-        "suggestOnTriggerCharacters": true,
-        "minimap": true
-    },
-    "terminal": {
-        "shell": "/bin/zsh",
-        "fontSize": 14,
-        "integrated": true,
-        "copyOnSelection": true,
-        "defaultProfile": {
-            "osx": "zsh",
-            "linux": "bash"
-        }
-    },
-    "ai": {
-        "language": "en",
-        "model": "claude-3-sonnet",
-        "temperature": 0.7,
-        "contextWindow": 100000,
-        "suggestions": {
-            "typescript": true,
-            "javascript": true,
-            "python": true,
-            "yaml": true,
-            "shell": true
-        }
-    },
-    "files": {
-        "autoSave": "afterDelay",
-        "autoSaveDelay": 1000,
-        "exclude": {
-            "**/node_modules": true,
-            "**/.next": true,
-            "**/dist": true,
-            "**/.git": true,
-            "**/coverage": true
-        },
-        "associations": {
-            "*.yml": "yaml",
-            "*.yaml": "yaml",
-            "Dockerfile*": "dockerfile",
-            "*.sh": "shellscript"
-        }
-    },
-    "language": {
-        "typescript": {
-            "format": {
-                "enable": true,
-                "semicolons": true,
-                "singleQuote": true
-            },
-            "suggest": {
-                "completeFunctionCalls": true,
-                "enabled": true
-            }
-        },
-        "javascript": {
-            "format": {
-                "enable": true,
-                "semicolons": true,
-                "singleQuote": true
-            }
-        },
-        "python": {
-            "formatting": {
-                "provider": "black",
-                "blackPath": "black"
-            },
-            "linting": {
-                "enabled": true,
-                "pylintEnabled": true
-            }
-        },
-        "yaml": {
-            "format": {
-                "enable": true,
-                "singleQuote": true
-            },
-            "validate": true,
-            "schemaStore": {
-                "enable": true,
-                "url": "https://www.schemastore.org/api/json/catalog.json"
-            }
-        },
-        "shellscript": {
-            "format": {
-                "enable": true
-            },
-            "validate": true
-        }
-    },
-    "workbench": {
-        "colorTheme": "One Dark Pro",
-        "iconTheme": "material-icon-theme",
-        "tree": {
-            "indent": 16,
-            "renderIndentGuides": true
-        }
-    },
-    "remote": {
-        "SSH": {
-            "defaultForwardedPorts": [
-                {"port": 3000, "description": "Next.js"},
-                {"port": 9090, "description": "Prometheus"},
-                {"port": 9093, "description": "Alertmanager"},
-                {"port": 9100, "description": "Node Exporter"},
-                {"port": 9115, "description": "Blackbox Exporter"},
-                {"port": 3306, "description": "MySQL"},
-                {"port": 80, "description": "Nginx"},
-                {"port": 443, "description": "HTTPS"},
-                {"port": 3000, "description": "Grafana"}
-            ],
-            "remotePlatform": {
-                "linux": "linux-arm64"
-            }
-        }
-    },
-    "docker": {
-        "enabled": true,
-        "buildKit": true,
-        "containerName": {
-            "pattern": "${workspaceFolderBasename}-${containerName}"
-        },
-        "compose": {
-            "path": "docker-compose.yml",
-            "autoStart": true
-        }
-    },
-    "debug": {
-        "javascript": {
-            "sourceMaps": true,
-            "autoAttachChildProcesses": true
-        },
-        "python": {
-            "justMyCode": false
-        }
-    },
-    "security": {
-        "workspace": {
-            "trust": {
-                "enabled": true,
-                "untrustedFiles": "prompt"
-            }
-        }
-    },
-    "prometheus": {
-        "scrapeInterval": "15s",
-        "evaluationInterval": "15s",
-        "exporters": {
-            "nodeExporter": true,
-            "blackboxExporter": true,
-            "mysqlExporter": true,
-            "nginxExporter": true
         },
         "monitoring": {
-            "aggregation": {
-                "rules": {
-                    "cpu_usage_high": {
-                        "expr": "avg(rate(node_cpu_seconds_total{mode='idle'}[5m])) < 0.2",
-                        "for": "5m",
-                        "severity": "warning"
+            "prometheus": {
+                "version": "2.49.0",
+                "exporters": {
+                    "node": true,
+                    "mysql": true,
+                    "nginx": true,
+                    "blackbox": true
+                },
+                "retention": "15d",
+                "scrape_interval": "15s"
+            },
+            "alertmanager": {
+                "version": "0.26.0",
+                "config": {
+                    "global": {
+                        "resolve_timeout": "5m",
+                        "smtp_smarthost": "smtp.example.com:587",
+                        "smtp_from": "alertmanager@example.com"
                     },
-                    "memory_usage_high": {
-                        "expr": "node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10",
-                        "for": "5m",
-                        "severity": "critical"
+                    "route": {
+                        "group_by": ["alertname", "cluster", "service"],
+                        "group_wait": "30s",
+                        "group_interval": "5m",
+                        "repeat_interval": "4h",
+                        "receiver": "default-receiver",
+                        "routes": [
+                            {
+                                "match": {
+                                    "severity": "critical"
+                                },
+                                "receiver": "critical-receiver",
+                                "repeat_interval": "30m"
+                            },
+                            {
+                                "match": {
+                                    "severity": "warning"
+                                },
+                                "receiver": "warning-receiver",
+                                "repeat_interval": "2h"
+                            }
+                        ]
                     },
-                    "disk_space_low": {
-                        "expr": "node_filesystem_avail_bytes{mountpoint='/'} / node_filesystem_size_bytes{mountpoint='/'} * 100 < 15",
-                        "for": "10m",
-                        "severity": "warning"
-                    },
-                    "nginx_high_error_rate": {
-                        "expr": "rate(nginx_http_requests_total{status=~'5..'}[5m]) / rate(nginx_http_requests_total[5m]) * 100 > 5",
-                        "for": "5m",
-                        "severity": "critical"
-                    },
-                    "mysql_slow_queries": {
-                        "expr": "rate(mysql_global_status_slow_queries[5m]) > 10",
-                        "for": "5m",
-                        "severity": "warning"
+                    "receivers": [
+                        {
+                            "name": "default-receiver",
+                            "email_configs": [
+                                {
+                                    "to": "admin@example.com"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "critical-receiver",
+                            "email_configs": [
+                                {
+                                    "to": "admin@example.com"
+                                }
+                            ],
+                            "telegram_configs": [
+                                {
+                                    "bot_token": "${TELEGRAM_BOT_TOKEN}",
+                                    "chat_id": "${TELEGRAM_CHAT_ID}",
+                                    "parse_mode": "HTML"
+                                }
+                            ],
+                            "webhook_configs": [
+                                {
+                                    "url": "https://oapi.dingtalk.com/robot/send?access_token=${DINGTALK_TOKEN}",
+                                    "http_config": {
+                                        "bearer_token": "${DINGTALK_SECRET}"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "warning-receiver",
+                            "telegram_configs": [
+                                {
+                                    "bot_token": "${TELEGRAM_BOT_TOKEN}",
+                                    "chat_id": "${TELEGRAM_CHAT_ID}",
+                                    "parse_mode": "HTML"
+                                }
+                            ],
+                            "webhook_configs": [
+                                {
+                                    "url": "https://oapi.dingtalk.com/robot/send?access_token=${DINGTALK_TOKEN}",
+                                    "http_config": {
+                                        "bearer_token": "${DINGTALK_SECRET}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "templates": [
+                        "/etc/alertmanager/template/*.tmpl"
+                    ],
+                    "inhibit_rules": [
+                        {
+                            "source_match": {
+                                "severity": "critical"
+                            },
+                            "target_match": {
+                                "severity": "warning"
+                            },
+                            "equal": ["alertname", "cluster", "service"]
+                        }
+                    ]
+                },
+                "templates": {
+                    "default.tmpl": {
+                        "telegram": "{{ define \"telegram.default\" }}\n<b>[{{ .Status | toUpper }}] {{ .AlertName }}</b>\n告警级别: {{ .Labels.severity }}\n时间: {{ .StartsAt }}\n实例: {{ .Labels.instance }}\n详情: {{ .Annotations.description }}{{ end }}",
+                        "email": "{{ define \"email.default\" }}\n告警名称: {{ .AlertName }}\n告警级别: {{ .Labels.severity }}\n告警时间: {{ .StartsAt }}\n实例: {{ .Labels.instance }}\n详情: {{ .Annotations.description }}{{ end }}",
+                        "dingtalk": "{{ define \"dingtalk.default\" }}\n### [{{ .Status | toUpper }}] {{ .AlertName }}\n- 告警级别: {{ .Labels.severity }}\n- 时间: {{ .StartsAt }}\n- 实例: {{ .Labels.instance }}\n- 详情: {{ .Annotations.description }}{{ end }}"
                     }
-                }
-            }
-        }
-    },
-    "grafana": {
-        "defaultDashboards": true,
-        "alerting": {
-            "enabled": true,
-            "rules": ["system", "mysql", "nginx"],
-            "channels": {
-                "email": {
-                    "enabled": true,
-                    "smtp": {
-                        "host": "smtp.example.com",
-                        "port": 587,
-                        "secure": true
-                    }
-                },
-                "slack": {
-                    "enabled": true,
-                    "webhook": true
-                },
-                "telegram": {
-                    "enabled": true,
-                    "bot": true
-                },
-                "webhook": {
-                    "enabled": true,
-                    "endpoints": ["custom-endpoint"]
                 }
             },
-            "policies": {
-                "critical": {
-                    "channels": ["email", "slack", "telegram"],
-                    "repeat": "30m",
-                    "groupBy": ["alertname", "instance"]
+            "grafana": {
+                "version": "10.2.3",
+                "features": {
+                    "alerting": true,
+                    "logs": true,
+                    "dashboards": true
                 },
-                "warning": {
-                    "channels": ["slack"],
-                    "repeat": "2h",
-                    "groupBy": ["alertname"]
-                },
-                "info": {
-                    "channels": ["slack"],
-                    "repeat": "6h"
+                "datasources": [
+                    "prometheus",
+                    "loki"
+                ]
+            },
+            "loki": {
+                "version": "2.9.0",
+                "retention": "7d",
+                "features": {
+                    "alerts": true,
+                    "rules": true
                 }
             }
         },
-        "dashboards": {
-            "system": {
-                "title": "System Overview",
-                "refresh": "1m",
-                "panels": [
-                    "cpu_usage",
-                    "memory_usage",
-                    "disk_io",
-                    "network_traffic"
-                ]
+        "deployment": {
+            "docker": {
+                "enabled": true,
+                "compose": true
             },
-            "nginx": {
-                "title": "Nginx Metrics",
-                "refresh": "30s",
-                "panels": [
-                    "requests_per_second",
-                    "status_codes",
-                    "response_time",
-                    "active_connections"
-                ]
-            },
-            "mysql": {
-                "title": "MySQL Performance",
-                "refresh": "1m",
-                "panels": [
-                    "queries_per_second",
-                    "slow_queries",
-                    "connections",
-                    "buffer_pool_usage"
-                ]
-            },
-            "security": {
-                "title": "Security Overview",
-                "refresh": "5m",
-                "panels": [
-                    "failed_logins",
-                    "ssl_expiry",
-                    "firewall_events",
-                    "auth_attempts"
-                ]
+            "ports": {
+                "strapi": 1337,
+                "prometheus": 9090,
+                "alertmanager": 9093,
+                "grafana": 3000,
+                "loki": 3100,
+                "node_exporter": 9100,
+                "mysql_exporter": 9104,
+                "nginx_exporter": 9113,
+                "blackbox_exporter": 9115
             }
         }
     },
-    "ansible": {
-        "inventoryFile": "inventory.yml",
-        "configFile": "ansible.cfg",
-        "playbookDirectory": "playbooks",
-        "rolesDirectory": "roles"
-    },
-    "alertmanager": {
-        "config": {
-            "global": {
-                "resolve_timeout": "5m",
-                "smtp_smarthost": "smtp.example.com:587",
-                "smtp_from": "alertmanager@example.com"
-            },
-            "route": {
-                "group_by": ["alertname", "cluster", "service"],
-                "group_wait": "30s",
-                "group_interval": "5m",
-                "repeat_interval": "4h",
-                "receiver": "default-receiver",
-                "routes": [
-                    {
-                        "match": {
-                            "severity": "critical"
-                        },
-                        "receiver": "critical-receiver",
-                        "repeat_interval": "30m"
-                    },
-                    {
-                        "match": {
-                            "severity": "warning"
-                        },
-                        "receiver": "warning-receiver",
-                        "repeat_interval": "2h"
-                    }
-                ]
-            },
-            "inhibit_rules": [
-                {
-                    "source_match": {
-                        "severity": "critical"
-                    },
-                    "target_match": {
-                        "severity": "warning"
-                    },
-                    "equal": ["alertname", "cluster", "service"]
-                }
-            ]
-        }
+    "development": {
+        "node": ">=18.0.0",
+        "postgres": ">=15.0",
+        "docker": ">=24.0.0",
+        "ansible": ">=2.16.0"
     }
 } 
