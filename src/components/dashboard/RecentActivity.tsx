@@ -7,6 +7,13 @@ import {
     MonitorHeart as MonitorIcon,
 } from '@mui/icons-material';
 
+interface Activity {
+    id: string | number;
+    type: string;
+    description: string;
+    timestamp: string;
+}
+
 const getActivityIcon = (type: string) => {
     switch (type) {
         case 'server':
@@ -48,7 +55,7 @@ export const RecentActivity = () => {
                     <Typography variant="h6">最近活动</Typography>
                 </Box>
                 <List>
-                    {data?.map((activity: any) => (
+                    {data?.map((activity: Activity) => (
                         <ListItem key={activity.id}>
                             <ListItemIcon>
                                 {getActivityIcon(activity.type)}

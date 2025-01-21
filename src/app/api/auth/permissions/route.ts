@@ -7,7 +7,7 @@ const rolePermissions = {
     developer: ['view_servers', 'view_sites', 'view_backups', 'view_monitoring'],
 };
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const headersList = headers();
         const token = headersList.get('Authorization')?.replace('Bearer ', '');

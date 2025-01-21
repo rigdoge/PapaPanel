@@ -12,6 +12,7 @@ import {
   ReferenceInput,
   Create,
   required,
+  SelectInput,
 } from 'react-admin';
 
 export const SiteList = () => (
@@ -36,7 +37,7 @@ export const SiteEdit = () => (
       <TextInput source="name" label="名称" validate={[required()]} />
       <TextInput source="domain" label="域名" validate={[required()]} />
       <ReferenceInput source="server_id" reference="servers" label="服务器">
-        <TextInput validate={[required()]} />
+        <SelectInput source="name" validate={[required()]} />
       </ReferenceInput>
       <TextInput source="status" label="状态" />
     </SimpleForm>
@@ -49,7 +50,7 @@ export const SiteCreate = () => (
       <TextInput source="name" label="名称" validate={[required()]} />
       <TextInput source="domain" label="域名" validate={[required()]} />
       <ReferenceInput source="server_id" reference="servers" label="服务器">
-        <TextInput validate={[required()]} />
+        <SelectInput source="name" validate={[required()]} />
       </ReferenceInput>
       <TextInput source="status" label="状态" defaultValue="active" />
     </SimpleForm>

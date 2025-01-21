@@ -19,10 +19,11 @@ import {
 } from 'react-admin';
 
 const UserFilters = [
-  <SearchInput source="q" alwaysOn placeholder="搜索..." />,
-  <TextInput source="username" label="用户名" />,
-  <TextInput source="email" label="邮箱" />,
+  <SearchInput key="search" source="q" alwaysOn placeholder="搜索..." />,
+  <TextInput key="username" source="username" label="用户名" />,
+  <TextInput key="email" source="email" label="邮箱" />,
   <SelectInput
+    key="role"
     source="role"
     label="角色"
     choices={[
@@ -33,6 +34,7 @@ const UserFilters = [
     ]}
   />,
   <SelectInput
+    key="status"
     source="is_active"
     label="状态"
     choices={[

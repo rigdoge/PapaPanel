@@ -16,7 +16,6 @@ import {
 } from 'react-admin';
 
 const UserEditToolbar = () => {
-  const record = useRecordContext();
   return (
     <Toolbar>
       <SaveButton label="保存修改" />
