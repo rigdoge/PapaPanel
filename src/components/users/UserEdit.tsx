@@ -13,6 +13,7 @@ import {
   SaveButton,
   DeleteButton,
   useRecordContext,
+  DateInput,
 } from 'react-admin';
 
 const UserEditToolbar = () => {
@@ -70,7 +71,7 @@ export const UserEdit = () => (
         source="is_active" 
         label="启用账号" 
       />
-      <DateTimeInput 
+      <DateInput 
         source="valid_until" 
         label="有效期至" 
       />

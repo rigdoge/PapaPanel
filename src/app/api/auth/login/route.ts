@@ -8,13 +8,13 @@ export const dynamic = 'force-dynamic';
 interface User {
   id: number;
   username: string;
-  role: string;
   email: string;
   password: string;
-  is_active: boolean;
+  role: string;
   department?: string;
   position?: string;
   phone?: string;
+  is_active: boolean;
   valid_until?: string;
   created_at: string;
   last_login?: string;
@@ -32,15 +32,13 @@ const generateToken = (user: User) => {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { username, password } = body;
+    const { username, password } = await request.json();
 
-    // 从模拟数据中查找用户
+    // 查找用户
     const user = mockUsers.find(u => u.username === username);
-
-    if (!user || !user.is_active) {
+    if (!user) {
       return NextResponse.json(
-        { message: '用户名或密码错误' },
+        { error: '用户名或密码错误' },
         { status: 401 }
       );
     }
@@ -49,22 +47,45 @@ export async function POST(request: Request) {
     const isValid = await compare(password, user.password);
     if (!isValid) {
       return NextResponse.json(
-        { message: '用户名或密码错误' },
+        { error: '用户名或密码错误' },
         { status: 401 }
       );
     }
 
+    // 检查账户是否有效
+    if (!user.is_active) {
+      return NextResponse.json(
+        { error: '账户已被禁用' },
+        { status: 403 }
+      );
+    }
+
+    // 检查账户是否过期
+    if (user.valid_until && new Date(user.valid_until) < new Date()) {
+      return NextResponse.json(
+        { error: '账户已过期' },
+        { status: 403 }
+      );
+    }
+
     // 更新最后登录时间
-    user.last_login = new Date().toISOString();
+    const updatedUser = {
+      ...user,
+      last_login: new Date().toISOString()
+    };
 
     // 生成 token
-    const token = generateToken(user);
+    const token = generateToken(updatedUser);
 
     // 返回用户信息（不包含密码）
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = updatedUser;
 
     return NextResponse.json({
-      token,
+      id: updatedUser.id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      token: token,
       user: userWithoutPassword,
     });
   } catch (error) {
