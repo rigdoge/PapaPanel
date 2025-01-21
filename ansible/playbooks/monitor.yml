@@ -1,0 +1,162 @@
+---
+- name: Setup Monitoring Stack
+  hosts: monitor_servers
+  become: true
+  vars:
+    prometheus_version: "{{ prometheus_version | default('2.49.0') }}"
+    alertmanager_version: "{{ alertmanager_version | default('0.26.0') }}"
+    grafana_version: "{{ grafana_version | default('10.2.3') }}"
+    loki_version: "{{ loki_version | default('2.9.0') }}"
+    
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - wget
+          - unzip
+          - gnupg2
+          - apt-transport-https
+          - software-properties-common
+        state: present
+        update_cache: yes
+        
+    - name: Create monitoring users
+      user:
+        name: "{{ item }}"
+        system: yes
+        shell: /bin/false
+      loop:
+        - prometheus
+        - alertmanager
+        - grafana
+        - loki
+        
+    - name: Create monitoring directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/prometheus
+        - /var/lib/prometheus
+        - /etc/alertmanager
+        - /var/lib/alertmanager
+        - /etc/grafana
+        - /var/lib/grafana
+        - /etc/loki
+        - /var/lib/loki
+        
+    - name: Download and install Prometheus
+      unarchive:
+        src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+        dest: /tmp
+        remote_src: yes
+        
+    - name: Copy Prometheus binaries
+      copy:
+        src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+        dest: /usr/local/bin/
+        mode: '0755'
+        remote_src: yes
+        
+    - name: Configure Prometheus
+      template:
+        src: templates/prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+      notify: Restart Prometheus
+        
+    - name: Install Prometheus service
+      template:
+        src: templates/prometheus.service.j2
+        dest: /etc/systemd/system/prometheus.service
+      notify: Restart Prometheus
+        
+    - name: Download and install Alertmanager
+      unarchive:
+        src: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+        dest: /tmp
+        remote_src: yes
+        
+    - name: Copy Alertmanager binaries
+      copy:
+        src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
+        dest: /usr/local/bin/
+        mode: '0755'
+        remote_src: yes
+        
+    - name: Configure Alertmanager
+      template:
+        src: templates/alertmanager.yml.j2
+        dest: /etc/alertmanager/alertmanager.yml
+      notify: Restart Alertmanager
+        
+    - name: Install Alertmanager service
+      template:
+        src: templates/alertmanager.service.j2
+        dest: /etc/systemd/system/alertmanager.service
+      notify: Restart Alertmanager
+        
+    - name: Add Grafana GPG key
+      apt_key:
+        url: https://packages.grafana.com/gpg.key
+        state: present
+        
+    - name: Add Grafana repository
+      apt_repository:
+        repo: deb https://packages.grafana.com/oss/deb stable main
+        state: present
+        
+    - name: Install Grafana
+      apt:
+        name: grafana
+        state: present
+        update_cache: yes
+      notify: Restart Grafana
+        
+    - name: Download and install Loki
+      unarchive:
+        src: "https://github.com/grafana/loki/releases/download/v{{ loki_version }}/loki-linux-amd64.zip"
+        dest: /usr/local/bin/
+        remote_src: yes
+        mode: '0755'
+        
+    - name: Configure Loki
+      template:
+        src: templates/loki-config.yml.j2
+        dest: /etc/loki/config.yml
+      notify: Restart Loki
+        
+    - name: Install Loki service
+      template:
+        src: templates/loki.service.j2
+        dest: /etc/systemd/system/loki.service
+      notify: Restart Loki
+        
+  handlers:
+    - name: Restart Prometheus
+      systemd:
+        name: prometheus
+        state: restarted
+        daemon_reload: yes
+        enabled: yes
+        
+    - name: Restart Alertmanager
+      systemd:
+        name: alertmanager
+        state: restarted
+        daemon_reload: yes
+        enabled: yes
+        
+    - name: Restart Grafana
+      systemd:
+        name: grafana-server
+        state: restarted
+        enabled: yes
+        
+    - name: Restart Loki
+      systemd:
+        name: loki
+        state: restarted
+        daemon_reload: yes
+        enabled: yes 
