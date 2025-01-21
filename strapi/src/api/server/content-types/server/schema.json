@@ -20,14 +20,19 @@
       "type": "string",
       "required": true
     },
+    "is_local": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
     "ssh_port": {
       "type": "integer",
-      "required": true,
+      "required": false,
       "default": 22
     },
     "ssh_key": {
       "type": "text",
-      "required": true
+      "required": false
     },
     "status": {
       "type": "enumeration",
