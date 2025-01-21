@@ -1,9 +1,10 @@
 [{{ domain }}]
 user = www-data
 group = www-data
-listen = /run/php/php{{ php_version }}-fpm-{{ domain }}.sock
+listen = /var/run/php/php{{ php_version }}-fpm-{{ domain }}.sock
 listen.owner = www-data
 listen.group = www-data
+listen.mode = 0660
 pm = dynamic
 pm.max_children = 5
 pm.start_servers = 2
@@ -11,8 +12,16 @@ pm.min_spare_servers = 1
 pm.max_spare_servers = 3
 chdir = {{ document_root }}
 
-php_admin_value[upload_max_filesize] = 10M
-php_admin_value[post_max_size] = 10M
+php_admin_value[error_log] = /var/log/php/{{ domain }}_error.log
+php_admin_flag[log_errors] = on
 php_admin_value[memory_limit] = 128M
+php_admin_value[upload_max_filesize] = 32M
+php_admin_value[post_max_size] = 32M
 php_admin_value[max_execution_time] = 300
-php_admin_value[max_input_time] = 300 
+php_admin_value[max_input_time] = 300
+
+env[HOSTNAME] = $HOSTNAME
+env[PATH] = /usr/local/bin:/usr/bin:/bin
+env[TMP] = /tmp
+env[TMPDIR] = /tmp
+env[TEMP] = /tmp 

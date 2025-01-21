@@ -1,59 +1,57 @@
 global:
   resolve_timeout: 5m
-  smtp_smarthost: '{{ smtp_host | default("smtp.example.com:587") }}'
-  smtp_from: '{{ smtp_from | default("alertmanager@example.com") }}'
-  smtp_auth_username: '{{ smtp_username | default("") }}'
-  smtp_auth_password: '{{ smtp_password | default("") }}'
+  smtp_smarthost: smtp.example.com:587
+  smtp_from: alertmanager@example.com
 
 route:
   group_by: ['alertname', 'cluster', 'service']
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
-  receiver: 'default-receiver'
+  receiver: default-receiver
   routes:
     - match:
         severity: critical
-      receiver: 'critical-receiver'
+      receiver: critical-receiver
       repeat_interval: 30m
     - match:
         severity: warning
-      receiver: 'warning-receiver'
+      receiver: warning-receiver
       repeat_interval: 2h
 
 receivers:
-  - name: 'default-receiver'
+  - name: default-receiver
     email_configs:
-      - to: '{{ default_email | default("admin@example.com") }}'
+      - to: admin@example.com
 
-  - name: 'critical-receiver'
+  - name: critical-receiver
     email_configs:
-      - to: '{{ critical_email | default("admin@example.com") }}'
+      - to: admin@example.com
     telegram_configs:
-      - bot_token: '{{ telegram_bot_token | default("") }}'
-        chat_id: '{{ telegram_chat_id | default("") }}'
-        parse_mode: 'HTML'
+      - bot_token: ${TELEGRAM_BOT_TOKEN}
+        chat_id: ${TELEGRAM_CHAT_ID}
+        parse_mode: HTML
     webhook_configs:
-      - url: '{{ dingtalk_webhook | default("") }}'
+      - url: https://oapi.dingtalk.com/robot/send?access_token=${DINGTALK_TOKEN}
         http_config:
-          bearer_token: '{{ dingtalk_secret | default("") }}'
+          bearer_token: ${DINGTALK_SECRET}
 
-  - name: 'warning-receiver'
+  - name: warning-receiver
     telegram_configs:
-      - bot_token: '{{ telegram_bot_token | default("") }}'
-        chat_id: '{{ telegram_chat_id | default("") }}'
-        parse_mode: 'HTML'
+      - bot_token: ${TELEGRAM_BOT_TOKEN}
+        chat_id: ${TELEGRAM_CHAT_ID}
+        parse_mode: HTML
     webhook_configs:
-      - url: '{{ dingtalk_webhook | default("") }}'
+      - url: https://oapi.dingtalk.com/robot/send?access_token=${DINGTALK_TOKEN}
         http_config:
-          bearer_token: '{{ dingtalk_secret | default("") }}'
+          bearer_token: ${DINGTALK_SECRET}
 
 templates:
   - /etc/alertmanager/template/*.tmpl
 
 inhibit_rules:
   - source_match:
-      severity: 'critical'
+      severity: critical
     target_match:
-      severity: 'warning'
+      severity: warning
     equal: ['alertname', 'cluster', 'service'] 

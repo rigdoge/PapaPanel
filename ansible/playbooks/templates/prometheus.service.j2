@@ -1,7 +1,6 @@
 [Unit]
 Description=Prometheus
 Documentation=https://prometheus.io/docs/introduction/overview/
-Wants=network-online.target
 After=network-online.target
 
 [Service]
@@ -9,15 +8,12 @@ Type=simple
 User=prometheus
 Group=prometheus
 ExecStart=/usr/local/bin/prometheus \
-  --config.file=/etc/prometheus/prometheus.yml \
-  --storage.tsdb.path=/var/lib/prometheus \
-  --storage.tsdb.retention.time=15d \
-  --web.console.templates=/etc/prometheus/consoles \
-  --web.console.libraries=/etc/prometheus/console_libraries \
-  --web.listen-address=0.0.0.0:9090 \
-  --web.enable-lifecycle
+    --config.file=/etc/prometheus/prometheus.yml \
+    --storage.tsdb.path=/var/lib/prometheus \
+    --web.listen-address=0.0.0.0:9090 \
+    --web.enable-lifecycle \
+    --storage.tsdb.retention.time=15d
 
-SyslogIdentifier=prometheus
 Restart=always
 
 [Install]

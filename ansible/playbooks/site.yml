@@ -1,45 +1,43 @@
 ---
 - name: Deploy Website
-  hosts: web_servers
+  hosts: all
   become: true
   vars:
     domain: "{{ domain }}"
-    php_version: "{{ php_version }}"
-    document_root: "/var/www/{{ domain }}"
-    
+    php_version: "{{ php_version | default('8.2') }}"
+    nginx_config: "{{ nginx_config | default({}) }}"
+
   tasks:
-    - name: Create document root directory
+    - name: Create web root directory
       file:
-        path: "{{ document_root }}"
+        path: "/var/www/{{ domain }}"
         state: directory
         mode: '0755'
-        
-    - name: Configure Nginx virtual host
+        owner: www-data
+        group: www-data
+
+    - name: Configure Nginx site
       template:
-        src: templates/nginx-vhost.conf.j2
-        dest: "/etc/nginx/sites-available/{{ domain }}.conf"
-      notify: Reload Nginx
-        
-    - name: Enable Nginx virtual host
+        src: nginx-site.conf.j2
+        dest: "/etc/nginx/sites-available/{{ domain }}"
+        mode: '0644'
+
+    - name: Enable Nginx site
       file:
-        src: "/etc/nginx/sites-available/{{ domain }}.conf"
-        dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+        src: "/etc/nginx/sites-available/{{ domain }}"
+        dest: "/etc/nginx/sites-enabled/{{ domain }}"
         state: link
-      notify: Reload Nginx
-        
-    - name: Create PHP-FPM pool configuration
+
+    - name: Configure PHP-FPM pool
       template:
-        src: templates/php-fpm-pool.conf.j2
+        src: php-fpm-pool.conf.j2
         dest: "/etc/php/{{ php_version }}/fpm/pool.d/{{ domain }}.conf"
-      notify: Reload PHP-FPM
-        
-  handlers:
-    - name: Reload Nginx
+        mode: '0644'
+
+    - name: Restart services
       service:
-        name: nginx
-        state: reloaded
-        
-    - name: Reload PHP-FPM
-      service:
-        name: "php{{ php_version }}-fpm"
-        state: reloaded 
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - nginx
+        - "php{{ php_version }}-fpm" 

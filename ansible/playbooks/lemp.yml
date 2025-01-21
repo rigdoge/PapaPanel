@@ -1,31 +1,45 @@
 ---
 - name: Install LEMP Stack
-  hosts: web_servers
+  hosts: all
   become: true
   vars:
     php_version: "{{ php_version | default('8.2') }}"
-    mysql_root_password: "{{ mysql_root_password }}"
-    
+    mysql_root_password: "{{ mysql_root_password | default('changeme') }}"
+
   tasks:
     - name: Update apt cache
       apt:
         update_cache: yes
-        
+        cache_valid_time: 3600
+
     - name: Install Nginx
       apt:
         name: nginx
         state: present
-        
+
     - name: Install MySQL
       apt:
-        name:
+        name: 
           - mysql-server
           - mysql-client
+          - python3-mysqldb
         state: present
-        
+
+    - name: Set MySQL root password
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Add PHP repository
+      apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
     - name: Install PHP and extensions
       apt:
         name:
+          - "php{{ php_version }}"
           - "php{{ php_version }}-fpm"
           - "php{{ php_version }}-mysql"
           - "php{{ php_version }}-curl"
@@ -34,13 +48,13 @@
           - "php{{ php_version }}-xml"
           - "php{{ php_version }}-zip"
         state: present
-        
+
     - name: Start and enable services
       service:
         name: "{{ item }}"
         state: started
         enabled: yes
-      with_items:
+      loop:
         - nginx
         - mysql
         - "php{{ php_version }}-fpm" 

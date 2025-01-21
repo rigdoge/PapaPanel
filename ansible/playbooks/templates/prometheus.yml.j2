@@ -1,6 +1,7 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s
 
 alerting:
   alertmanagers:
@@ -12,32 +13,33 @@ rule_files:
   - /etc/prometheus/rules/*.yml
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: prometheus
     static_configs:
-      - targets: ['localhost:9090']
+      - targets:
+          - localhost:9090
 
-  - job_name: 'node'
-    file_sd_configs:
-      - files:
-        - /etc/prometheus/targets/node_exporter.yml
+  - job_name: node
+    static_configs:
+      - targets:
+          - localhost:9100
 
-  - job_name: 'mysql'
-    file_sd_configs:
-      - files:
-        - /etc/prometheus/targets/mysql_exporter.yml
+  - job_name: mysql
+    static_configs:
+      - targets:
+          - localhost:9104
 
-  - job_name: 'nginx'
-    file_sd_configs:
-      - files:
-        - /etc/prometheus/targets/nginx_exporter.yml
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost:9113
 
-  - job_name: 'blackbox'
+  - job_name: blackbox
     metrics_path: /probe
     params:
       module: [http_2xx]
-    file_sd_configs:
-      - files:
-        - /etc/prometheus/targets/blackbox_exporter.yml
+    static_configs:
+      - targets:
+          - http://localhost
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
