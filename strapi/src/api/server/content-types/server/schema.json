@@ -28,7 +28,9 @@
     "ssh_port": {
       "type": "integer",
       "required": false,
-      "default": 22
+      "default": 22,
+      "min": 1,
+      "max": 65535
     },
     "ssh_key": {
       "type": "text",
@@ -41,7 +43,7 @@
         "inactive",
         "maintenance"
       ],
-      "default": "inactive",
+      "default": "active",
       "required": true
     },
     "server_type": {
