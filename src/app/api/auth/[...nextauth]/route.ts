@@ -3,6 +3,25 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { mockUsers } from "@/lib/mockData";
 
+declare module "next-auth" {
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }
+  
+  interface Session {
+    user: User;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: string;
+  }
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({

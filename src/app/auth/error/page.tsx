@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 export default function ErrorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const error = searchParams.get('error');
+  const error = searchParams?.get('error') ?? null;
 
-  const getErrorMessage = (error: string) => {
+  const getErrorMessage = (error: string | null) => {
+    if (!error) return '发生未知错误';
+    
     switch (error) {
       case 'CredentialsSignin':
         return '用户名或密码错误';
@@ -64,7 +66,7 @@ export default function ErrorPage() {
               mb: 4,
             }}
           >
-            {error ? getErrorMessage(error) : '发生未知错误'}
+            {getErrorMessage(error)}
           </Typography>
           <Button
             variant="contained"

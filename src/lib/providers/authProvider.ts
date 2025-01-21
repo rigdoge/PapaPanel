@@ -63,7 +63,10 @@ export const authProvider: AuthProvider = {
 
     getPermissions: async () => {
         const session = await getSession();
-        return session?.user?.role ? Promise.resolve(session.user.role) : Promise.reject();
+        if (!session?.user?.role) {
+            return Promise.reject();
+        }
+        return Promise.resolve(session.user.role);
     },
 
     getIdentity: async () => {
@@ -75,7 +78,7 @@ export const authProvider: AuthProvider = {
         return Promise.resolve({
             id: session.user.id || '0',
             fullName: session.user.name || 'Unknown',
-            avatar: session.user.image,
+            avatar: session.user.image || undefined,
         });
     },
 }; 
