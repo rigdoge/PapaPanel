@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  strapi:
+    container_name: papapanel_strapi
+    build:
+      context: ./strapi
+      dockerfile: Dockerfile
+    image: papapanel/strapi:latest
+    restart: unless-stopped
+    env_file: ./strapi/.env
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_DB}
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      APP_KEYS: ${APP_KEYS}
+      NODE_ENV: production
+    volumes:
+      - ./strapi/config:/opt/app/config
+      - ./strapi/src:/opt/app/src
+      - ./strapi/package.json:/opt/package.json
+      - ./strapi/package-lock.json:/opt/package-lock.json
+      - ./strapi/.env:/opt/app/.env
+      - strapi_uploads:/opt/app/public/uploads
+    ports:
+      - '1337:1337'
+    networks:
+      - papapanel
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: papapanel_postgres
+    image: postgres:15-alpine
+    restart: unless-stopped
+    env_file: ./strapi/.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - papapanel
+
+  prometheus:
+    container_name: papapanel_prometheus
+    image: prom/prometheus:v2.49.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - '9090:9090'
+    networks:
+      - papapanel
+
+  alertmanager:
+    container_name: papapanel_alertmanager
+    image: prom/alertmanager:v0.26.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - '9093:9093'
+    networks:
+      - papapanel
+
+  grafana:
+    container_name: papapanel_grafana
+    image: grafana/grafana:10.2.3
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - '3000:3000'
+    networks:
+      - papapanel
+
+  loki:
+    container_name: papapanel_loki
+    image: grafana/loki:2.9.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/loki:/etc/loki
+      - loki_data:/loki
+    command: -config.file=/etc/loki/config.yml
+    ports:
+      - '3100:3100'
+    networks:
+      - papapanel
+
+volumes:
+  postgres_data:
+  strapi_uploads:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+  loki_data:
+
+networks:
+  papapanel:
+    driver: bridge 

@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "servers",
+  "info": {
+    "singularName": "server",
+    "pluralName": "servers",
+    "displayName": "Server",
+    "description": "服务器管理"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "hostname": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "ip": {
+      "type": "string",
+      "required": true
+    },
+    "ssh_port": {
+      "type": "integer",
+      "required": true,
+      "default": 22
+    },
+    "ssh_key": {
+      "type": "text",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "inactive",
+        "maintenance"
+      ],
+      "default": "inactive",
+      "required": true
+    },
+    "server_type": {
+      "type": "enumeration",
+      "enum": [
+        "web",
+        "database",
+        "monitor"
+      ],
+      "required": true
+    },
+    "sites": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::site.site",
+      "mappedBy": "server"
+    },
+    "monitors": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::monitor.monitor",
+      "mappedBy": "server"
+    }
+  }
+} 

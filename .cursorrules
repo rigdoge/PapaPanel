@@ -13,8 +13,17 @@
         "backend": {
             "cms": {
                 "framework": "Strapi",
-                "version": "4.20.0",
-                "database": "postgres",
+                "version": "5.8.0",
+                "port": 1338,
+                "database": {
+                    "type": "postgres",
+                    "version": ">=15.0",
+                    "host": "127.0.0.1",
+                    "port": 5432,
+                    "name": "papapanel",
+                    "username": "doge",
+                    "password": "doge.2010"
+                },
                 "features": {
                     "auth": true,
                     "api": true,
@@ -281,12 +290,8 @@
             }
         },
         "deployment": {
-            "docker": {
-                "enabled": true,
-                "compose": true
-            },
             "ports": {
-                "strapi": 1337,
+                "strapi": 1338,
                 "prometheus": 9090,
                 "alertmanager": 9093,
                 "grafana": 3000,
@@ -301,7 +306,6 @@
     "development": {
         "node": ">=18.0.0",
         "postgres": ">=15.0",
-        "docker": ">=24.0.0",
         "ansible": ">=2.16.0"
     }
 } 

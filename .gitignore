@@ -1,30 +1,37 @@
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
-# testing
+# Testing
 /coverage
 
-# next.js
+# Next.js
 /.next/
 /out/
 
-# production
+# Production
 /build
+/dist
 
-# misc
+# Misc
 .DS_Store
 *.pem
-.env*
-!.env.example
 
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# typescript
+# Local env files
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
@@ -34,6 +41,39 @@ next-env.d.ts
 *.swp
 *.swo
 
+# Strapi
+############################
+/strapi/.cache
+/strapi/.tmp
+/strapi/.env
+/strapi/license.txt
+/strapi/exports
+/strapi/build
+/strapi/dist
+/strapi/.strapi-updater.json
+
+# Ansible
+############################
+/ansible/*.retry
+/ansible/inventory/*
+!/ansible/inventory/example
+
+# Monitoring
+############################
+/monitoring/prometheus/data
+/monitoring/alertmanager/data
+/monitoring/grafana/data
+/monitoring/loki/data
+
+# Logs
+############################
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # OS
+############################
 .DS_Store
-Thumbs.db
+Thumbs.db 

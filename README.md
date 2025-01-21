@@ -1,61 +1,52 @@
 # PapaPanel
 
-基于 Next.js 和 React Admin 的 LEMP 环境自动化部署和监控管理平台
+基于 Strapi 的 LEMP 环境自动化部署和监控管理平台
 
-## 项目概述
+## 功能特点
 
-PapaPanel 是一个现代化的 LEMP (Linux, Nginx, MySQL, PHP) 环境管理平台，提供自动化部署、监控和管理功能。
+- 服务器管理
+  - LEMP 环境自动部署
+  - 站点配置管理
+  - SSL 证书管理
+  - 安全加固
 
-### 主要特性
+- 监控告警
+  - 系统指标监控
+  - 服务状态监控
+  - 多渠道告警通知
+  - 日志聚合分析
 
-- 🚀 自动化部署 LEMP 环境
-- 📊 实时监控和告警
-- 🛡️ 安全管理和审计
-- 🔄 自动备份和恢复
-- 📱 响应式设计，支持移动端
-- 🌐 多站点管理
-- 🔍 日志聚合和分析
-- 🎯 性能优化建议
+- 自动化运维
+  - Ansible Playbooks
+  - 备份管理
+  - 批量操作
+  - 定时任务
 
-### 技术栈
+## 技术栈
 
-- 前端
-  - Next.js 14
-  - React Admin 4.16
-  - TypeScript
-  - TailwindCSS
-  - Material-UI
-
-- 监控
-  - Prometheus
-  - Grafana
-  - Alertmanager
-
-- 自动化
-  - Ansible
-  - Terraform
-  - Shell Scripts
-
-- 环境
-  - Linux
-  - Nginx
-  - MySQL
-  - PHP
+- 后端框架：Strapi 4.20.0
+- 数据库：PostgreSQL
+- 自动化：Ansible 2.16.2
+- 监控系统：
+  - Prometheus 2.49.0
+  - Alertmanager 0.26.0
+  - Grafana 10.2.3
+  - Loki 2.9.0
 
 ## 快速开始
 
-### 前置条件
+### 环境要求
 
-- Node.js >= 16
-- Docker >= 20.10
-- Terraform >= 1.0
-- Ansible >= 2.9
+- Node.js >= 18.0.0
+- PostgreSQL >= 15.0
+- Docker >= 24.0.0
+- Ansible >= 2.16.0
 
 ### 安装步骤
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/rigdoge/PapaPanel.git
+git clone https://github.com/TattooMaster/PapaPanel.git
 cd PapaPanel
 ```
 
@@ -67,29 +58,23 @@ npm install
 3. 配置环境变量
 ```bash
 cp .env.example .env
-# 编辑 .env 文件设置必要的环境变量
+# 编辑 .env 文件，填写必要的配置
 ```
 
-4. 启动开发服务器
+4. 启动开发环境
 ```bash
-npm run dev
+docker-compose up -d
+npm run develop
 ```
-
-## 部署指南
-
-详细的部署文档请参考 [部署指南](docs/deployment.md)
 
 ## 文档
 
-- [用户指南](docs/user-guide.md)
-- [管理员指南](docs/admin-guide.md)
-- [开发指南](docs/development.md)
-- [API 文档](docs/api.md)
-
-## 贡献指南
-
-欢迎贡献代码，请参考 [贡献指南](CONTRIBUTING.md)
+- [架构设计](docs/architecture/overview.md)
+- [数据库设计](docs/architecture/database.md)
+- [部署指南](docs/architecture/deployment.md)
+- [贡献指南](CONTRIBUTING.md)
+- [更新日志](CHANGELOG.md)
 
 ## 许可证
 
-本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件 
+MIT 

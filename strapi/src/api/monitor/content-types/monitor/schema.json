@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "monitors",
+  "info": {
+    "singularName": "monitor",
+    "pluralName": "monitors",
+    "displayName": "Monitor",
+    "description": "监控管理"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "node",
+        "mysql",
+        "nginx",
+        "blackbox"
+      ],
+      "required": true
+    },
+    "endpoint": {
+      "type": "string",
+      "required": true
+    },
+    "auth_token": {
+      "type": "password",
+      "required": true
+    },
+    "server": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::server.server",
+      "inversedBy": "monitors"
+    },
+    "alerts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::alert.alert",
+      "mappedBy": "monitor"
+    }
+  }
+} 

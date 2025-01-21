@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sites",
+  "info": {
+    "singularName": "site",
+    "pluralName": "sites",
+    "displayName": "Site",
+    "description": "站点管理"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "domain": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "php_version": {
+      "type": "string",
+      "required": true
+    },
+    "nginx_config": {
+      "type": "json",
+      "required": true
+    },
+    "ssl_status": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "server": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::server.server",
+      "inversedBy": "sites"
+    },
+    "backups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::backup.backup",
+      "mappedBy": "site"
+    }
+  }
+} 

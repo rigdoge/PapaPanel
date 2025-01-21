@@ -1,0 +1,46 @@
+---
+- name: Install LEMP Stack
+  hosts: web_servers
+  become: true
+  vars:
+    php_version: "{{ php_version | default('8.2') }}"
+    mysql_root_password: "{{ mysql_root_password }}"
+    
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        
+    - name: Install MySQL
+      apt:
+        name:
+          - mysql-server
+          - mysql-client
+        state: present
+        
+    - name: Install PHP and extensions
+      apt:
+        name:
+          - "php{{ php_version }}-fpm"
+          - "php{{ php_version }}-mysql"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-gd"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-xml"
+          - "php{{ php_version }}-zip"
+        state: present
+        
+    - name: Start and enable services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - nginx
+        - mysql
+        - "php{{ php_version }}-fpm" 

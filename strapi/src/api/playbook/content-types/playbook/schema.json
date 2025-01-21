@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "playbooks",
+  "info": {
+    "singularName": "playbook",
+    "pluralName": "playbooks",
+    "displayName": "Playbook",
+    "description": "Ansible Playbook 管理"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "lemp",
+        "site",
+        "backup",
+        "monitor"
+      ],
+      "required": true
+    },
+    "ansible_file": {
+      "type": "string",
+      "required": true
+    },
+    "variables": {
+      "type": "json"
+    }
+  }
+} 

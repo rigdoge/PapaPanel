@@ -1,0 +1,45 @@
+---
+- name: Deploy Website
+  hosts: web_servers
+  become: true
+  vars:
+    domain: "{{ domain }}"
+    php_version: "{{ php_version }}"
+    document_root: "/var/www/{{ domain }}"
+    
+  tasks:
+    - name: Create document root directory
+      file:
+        path: "{{ document_root }}"
+        state: directory
+        mode: '0755'
+        
+    - name: Configure Nginx virtual host
+      template:
+        src: templates/nginx-vhost.conf.j2
+        dest: "/etc/nginx/sites-available/{{ domain }}.conf"
+      notify: Reload Nginx
+        
+    - name: Enable Nginx virtual host
+      file:
+        src: "/etc/nginx/sites-available/{{ domain }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+        state: link
+      notify: Reload Nginx
+        
+    - name: Create PHP-FPM pool configuration
+      template:
+        src: templates/php-fpm-pool.conf.j2
+        dest: "/etc/php/{{ php_version }}/fpm/pool.d/{{ domain }}.conf"
+      notify: Reload PHP-FPM
+        
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
+        
+    - name: Reload PHP-FPM
+      service:
+        name: "php{{ php_version }}-fpm"
+        state: reloaded 

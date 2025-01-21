@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "alerts",
+  "info": {
+    "singularName": "alert",
+    "pluralName": "alerts",
+    "displayName": "Alert",
+    "description": "告警管理"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "severity": {
+      "type": "enumeration",
+      "enum": [
+        "critical",
+        "warning",
+        "info"
+      ],
+      "required": true
+    },
+    "rules": {
+      "type": "json",
+      "required": true
+    },
+    "notification_channel": {
+      "type": "json",
+      "required": true
+    },
+    "monitor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::monitor.monitor",
+      "inversedBy": "alerts"
+    }
+  }
+} 

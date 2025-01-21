@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    server_name {{ domain }};
+    root {{ document_root }};
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php{{ php_version }}-fpm-{{ domain }}.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    access_log /var/log/nginx/{{ domain }}-access.log;
+    error_log /var/log/nginx/{{ domain }}-error.log;
+} 
